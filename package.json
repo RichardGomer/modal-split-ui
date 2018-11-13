@@ -1,0 +1,22 @@
+{
+  "name": "modal-split",
+  "version": "1.0.0",
+  "description": "Modal Split Interface",
+  "main": "msplit.js",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cssnano": "^4.1.7"
+  },
+  "dependencies": {
+    "react": "^16.6.0",
+    "react-dom": "^16.6.0",
+    "react-google-maps": "^9.4.5"
+  }
+}

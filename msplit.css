@@ -1,0 +1,127 @@
+.car {
+    background: #ff72d9;
+}
+
+.train {
+    background: #71c6ed;
+}
+
+.bus {
+    background: #ffd671;
+}
+
+.walk {
+    background: #88ff71;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.Segment:nth-of-type(1) {
+
+}
+
+.Segment:nth-of-type(1) .ModeRibbon {
+    border-top: 100px solid #ccc;
+    height: 300px;
+}
+
+.Segment, .EndSegment {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    width: 100%;
+}
+
+
+.EndSegment::before { /* Put a faux mode ribbon in the end segment */
+    content: ' ';
+    background: #ccc;
+}
+
+.ModeRibbon, .EndSegment::before {
+    display: block;
+    width: 70px;
+    position: relative;
+
+    height: 200px;
+
+    text-align: center;
+}
+
+.ModeMenu {
+    display: block;
+    position: absolute;
+    top: 50%;
+    margin-top: -50%;
+    font-size: 2em;
+    padding: 20px 0 20px 0;
+    width: 100%;
+    z-index: 10;
+}
+
+.ModeMenu ul {
+    list-style-type: none;
+    background: #ddd;
+    display: flex;
+    flex-direction: row;
+
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    margin-top: -50%;
+
+    padding: 0 5px 0 5px;
+}
+
+.ModeMenu ul li {
+    display: inline-block;
+    padding: 15px;
+    margin: 0;
+}
+
+/** The triangle/pointer on the LHS of the map container **/
+.Segment .MapOuter::before, .EndSegment .MapOuter::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    left: -30px;
+    top: 50%;
+    width: 30px;
+    height: 60px;
+    margin-top: -35px;
+    background: #ccc;
+    clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+
+.Segment .MapOuter, .EndSegment .MapOuter {
+    flex: 1;
+    height: 190px;
+    margin: 0 0 0 20px;
+    border-radius: 18px;
+    position: relative;
+    top: -100px;
+    border: 10px solid #ccc;
+    overflow: hidden;
+}
+
+.MapOuter::after { /* Apply a mask over the whole map to indicate the point of interest (centre) */
+    content: " ";
+    background: no-repeat center url("assets/map_mask.png");
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.Segment .Map, .EndSegment .Map
+{
+    overflow: hidden;
+    border-radius: 8px;
+    height: 100%;
+}
