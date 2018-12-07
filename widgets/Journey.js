@@ -1,48 +1,44 @@
 import React from 'react';
-import {Segment, EndSegment} from './Segment'
+import {Segment} from './Segment';
+import {SegmentInserter} from './SegmentInserter';
 
 export default class Journey extends React.Component {
     constructor(props) {
         super(props);
 
-        // Build the journey from the supplied JSON
-        var jny  = props.journey;
-        var segs = [];
-        for(var i in jny){
-            var seg = jny[i];
-            if(!seg.end && (!seg.mode || !seg.start)) {
-                console.error("Each segment needs either a mode and start point, or an end point", seg);
-            } else {
-                segs.push(seg);
-            }
-        }
+        this.update = this.update.bind(this);
 
-        // Convert journey to a path for plotting on the map
-        var path = [];
-        for(var i in props.journey) {
-            if(props.journey[i].start)
-                path.push(props.journey[i].start);
-            else
-                path.push(props.journey[i].end);
-        }
+        this.state = {journey: props.journey, updates: 0};
+        props.journey.subscribe('segment-add', this.update);
+        props.journey.subscribe('segment-delete', this.update);
+    }
 
-        this.state = {segments: segs, path: path};
+    update() {
+        this.setState({updates: this.state.updates+1});
     }
 
     render() {
 
-        const segs = [];
-        for(var i in this.state.segments) {
-            var s = this.state.segments[i];
-            if(s.start){
-                segs.push(<Segment key={i} start={s.start} mode={s.mode} path={this.state.path} onModeChange={() => {}}></Segment>);
+        const segs = this.state.journey.getSegments();
+        console.log(segs);
+        const els = [];
+
+        console.log("Rendering journey with ", segs.length, "segments");
+
+        for(var i in segs) {
+            var s = segs[i];
+            if(i < segs.length - 1){
+                console.log("Render segment",i,  s);
+                els.push(<Segment key={s.getUID().toString()} segment={s} onModeChange={() => {}}></Segment>);
+                els.push(<SegmentInserter key={"ins" + s.getUID().toString()} after={s}></SegmentInserter>);
             }
         }
 
-        segs.push(<EndSegment key={i+1} start={s.end} path={this.state.path} />)
+        console.log("Render end segment", i, s);
+        els.push(<Segment key={s.getUID().toString()} segment={s}></Segment>)
 
         return ( <div>
-                    {segs}
+                    {els}
                 </div> );
     }
 }

@@ -35,10 +35,11 @@ export class ModeMenu extends React.Component {
         }
 
         this.icons = {
+                'walk': <span className="fas fa-walking"></span>,
+                'bike': <span className="fas fa-bicycle"></span>,
                 'bus': <span className="fas fa-bus"></span>,
                 'car': <span className="fas fa-car"></span>,
-                'train': <span className="fas fa-train"></span>,
-                'walk': <span className="fas fa-walking"></span>,
+                'train': <span className="fas fa-train"></span>
         };
     }
 

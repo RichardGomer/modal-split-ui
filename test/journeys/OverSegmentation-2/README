@@ -1,0 +1,3 @@
+Start point correct
+Transport mode tags correct
+But two trips were detected instead of one. That is, a transport mode change point was inferred as a stop point, creating two trips

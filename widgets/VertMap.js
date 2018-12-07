@@ -5,12 +5,9 @@ import GeoPlus from '../geometry';
 /**
 
 Shows:
-- a path (set of points)
+- a path (array of points)
 - a point of interest (on the path)
 the point of interest can be moved along the path
-
-the orientation of the map will change so that the path is always oriented vertically.
-
 
 **/
 
@@ -20,21 +17,26 @@ export default class VertMap extends React.Component {
 
         this.parsePoint.bind(this);
 
+        console.log("Render VertMap", props.path, props.point);
+
         this.state = {path: this.parsePoint(props.path), point: this.parsePoint(props.point)};
 
         // FFS Javascript :/
         this.onPan = this.onIdle.bind(this);
         this.debugPlot = this.debugPlot.bind(this);
+        this.parsePoint = this.parsePoint.bind(this);
 
+        this.onMove = props.onMove;
     }
 
     parsePoint(p) {
 
+        // Array of strings
         if(Array.isArray(p)) {
-            return p.map(this.parsePoint)
+            return p.map(this.parsePoint);
         }
 
-        if(typeof p !=' string') {
+        if(typeof p != 'string') {
             console.error(p, "is not a string");
         }
 
@@ -119,7 +121,7 @@ export default class VertMap extends React.Component {
             var sdist = google.maps.geometry.spherical.computeDistanceBetween(spoint, center);
 
             if(sdist < best_dist) {
-                console.log("Best segment", sdist, last, cur);
+                //console.log("Best segment", sdist, last, cur);
                 best_dist = sdist;
                 best_point = spoint;
             }
@@ -130,6 +132,7 @@ export default class VertMap extends React.Component {
         // 4: And set the map to that location :)
         this.state.point = best_point;
         this.gmap.setCenter(best_point);
+        this.onMove(best_point);
     }
 
     debugPlot(point, label) {

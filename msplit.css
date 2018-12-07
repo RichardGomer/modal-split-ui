@@ -14,18 +14,30 @@
     background: #88ff71;
 }
 
+.bike {
+    background: #a187ff;
+}
+
 * {
     box-sizing: border-box;
     font-family: 'Open Sans', sans-serif;
+}
+
+#journeyui {
+    position: relative;
 }
 
 .Segment:nth-of-type(1) {
 
 }
 
-.Segment:nth-of-type(1) .ModeRibbon {
-    border-top: 100px solid #ccc;
-    height: 300px;
+.Segment:nth-of-type(1) .ModeRibbon::before {
+    content: " ";
+    display: block;
+    height: 98px;
+    background: #ccc;
+    border-bottom: 2px solid #aaa;
+    margin-top: -100px;
 }
 
 .Segment, .EndSegment {
@@ -45,6 +57,7 @@
     display: block;
     width: 70px;
     position: relative;
+    top: 100px;
 
     height: 200px;
 
@@ -92,7 +105,7 @@
     width: 30px;
     height: 60px;
     margin-top: -35px;
-    background: #ccc;
+    background: #aaa;
     clip-path: polygon(100% 0, 0 50%, 100% 100%);
 }
 
@@ -102,8 +115,8 @@
     margin: 0 0 0 20px;
     border-radius: 18px;
     position: relative;
-    top: -100px;
-    border: 10px solid #ccc;
+    top: 0;
+    border: 10px solid #aaa;
     overflow: visible;
 }
 
@@ -125,4 +138,45 @@
     border-radius: 8px;
     height: 100%;
     overflow: hidden;
+}
+
+
+.SegmentInserter
+{
+    position: relative;
+    top: 100px;
+}
+
+.SegmentInserter::before
+{
+    display: block;
+    content: " + ";
+    width: 70px;
+    height: 2em;
+    line-height: 2em;
+    background: #ccc;
+    color: #444;
+    font-weight: bold;
+    text-align: center;
+        border-bottom: 2px solid #aaa;
+}
+
+.SegmentControls {
+    text-align: right;
+}
+
+.SegmentControls button {
+    display: inline-block;
+    height: 1.9em;
+    border: 0;
+    padding: 5px 15px 10px 15px;
+    background: #aaa;
+    border-radius: 7px;
+    margin: 0 10px 0 0;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.SegmentControls .delete::before {
+    content: "Remove stop";
 }
