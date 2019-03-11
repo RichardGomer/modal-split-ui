@@ -15,7 +15,7 @@ export class Segment extends React.Component {
 
         var final = s.getPosition() === (s.getJourney().getSegments().length - 1);
 
-        this.state = {segment: s, point: s.getStart(), path: s.getJourney().getGPSPathPoints(), mode: s.getMode(), final: final};
+        this.state = {segment: s, point: s.getStart(), startTime: s.getStartTime(), path: s.getJourney().getGPSPathPoints(), mode: s.getMode(), final: final};
         s.subscribe("change-start", this.update);
         s.subscribe("change-path", this.update);
     }
@@ -26,7 +26,7 @@ export class Segment extends React.Component {
     update() {
         var s = this.state.segment;
         var final = s.getPosition() === (s.getJourney().getSegments().length - 1);
-        this.setState({point: s.getStart(), path: s.getJourney().getGPSPathPoints(), mode: s.getMode(), final: final});
+        this.setState({point: s.getStart(), startTime: s.getStartTime(), path: s.getJourney().getGPSPathPoints(), mode: s.getMode(), final: final});
     }
 
     // Wait for the point to change
@@ -39,12 +39,18 @@ export class Segment extends React.Component {
         this.state.segment.setMode(mode);
     }
 
+    timestr(timestamp) {
+        var d = new Date(Math.round(timestamp / 60) * 60 * 1000);
+        return d.getHours().toString().padStart(2,0) + ":" + d.getMinutes().toString().padStart(2,0);
+    }
+
 
     render() {
 
         if(this.state.segment.getPosition() == 0) {
             return (
                 <div className="Segment">
+                    <span className="timestamp">{this.timestr(this.state.startTime)}</span>
                     <ModeRibbon onModeChange={this.setMode} mode={this.state.mode} />
                     <div className="MapOuter"><VertMap onMove={e => this.setPoint(e)} point={this.state.point} path={this.state.path} /></div>
                 </div>
@@ -53,12 +59,14 @@ export class Segment extends React.Component {
         else if(this.state.final) {
             return (
                 <div className="EndSegment">
+                    <span className="timestamp">{this.timestr(this.state.startTime)}</span>
                     <div className="MapOuter"><VertMap onMove={this.setPoint} point={this.state.point} path={this.state.path} /></div>
                 </div>
                 );
         } else {
             return (
                 <div className="Segment">
+                    <span className="timestamp">{this.timestr(this.state.startTime)}</span>
                     <ModeRibbon onModeChange={this.setMode} mode={this.state.mode} />
                     <div className="MapOuter">
                         <VertMap onMove={e => this.setPoint(e)} point={this.state.point} path={this.state.path} />

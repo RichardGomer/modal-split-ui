@@ -15,37 +15,30 @@ export default class VertMap extends React.Component {
     constructor(props) {
         super(props);
 
-        this.parsePoint.bind(this);
-
         console.log("Render VertMap", props.path, props.point);
 
-        this.state = {path: this.parsePoint(props.path), point: this.parsePoint(props.point)};
+        this.state = {path: GeoPlus.parsePoint(props.path), point: GeoPlus.parsePoint(props.point)};
 
         // FFS Javascript :/
         this.onPan = this.onIdle.bind(this);
         this.debugPlot = this.debugPlot.bind(this);
-        this.parsePoint = this.parsePoint.bind(this);
 
         this.onMove = props.onMove;
     }
 
-    parsePoint(p) {
-
-        // Array of strings
-        if(Array.isArray(p)) {
-            return p.map(this.parsePoint);
-        }
-
-        if(typeof p != 'string') {
-            console.error(p, "is not a string");
-        }
-
-        p = p.split(',');
-        return new google.maps.LatLng(parseFloat(p[0]), parseFloat(p[1]));
+    /**
+    VERY IMPORTANT:
+        Rendering GMaps is expensive in time and money terms;
+        there is no good use-case for updating the state of a vertmap from outside, though
+        so a vertmap NEVER allows a re-render. If the point on a vertmap changes, it needs
+        to be destroyed and inserted again
+    **/
+    shouldComponentUpdate(nextProps, nextState) {
+        return false;
     }
 
     render() {
-
+        console.log("(Re-)rendering VertMap");
 
         // What a hideous pattern; anyway, this creates a new component...
         const Map = withGoogleMap( props =>

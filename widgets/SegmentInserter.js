@@ -13,6 +13,7 @@ export class SegmentInserter extends React.Component {
 
 
     insert() {
+        console.log("Insert segment");
         var newseg = new JourneyModelSegment({mode: this.state.segment.getMode(), start: this.state.segment.getEnd()});
         var pos = this.state.segment.getPosition() + 1;
         console.log("Manual segment insertion after", this.state.segment," at position", pos, newseg);

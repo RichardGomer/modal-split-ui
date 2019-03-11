@@ -4,6 +4,29 @@
 
 export default class GeoPlus
 {
+
+    static parsePoint(p) {
+
+        // Array of strings
+        if(Array.isArray(p)) {
+            return p.map(GeoPlus.parsePoint);
+        }
+
+        if(typeof p != 'string') {
+            console.error(p, "is not a string");
+        }
+
+        p = p.split(',');
+        return new google.maps.LatLng(parseFloat(p[0]), parseFloat(p[1]));
+    }
+
+    static strPoint(p) {
+        if(typeof p == "array")
+            return p.join(',');
+        elseif(p instanceof google.maps.LatLng)
+            return p.lat().toString() + "," + p.lng().toString();
+    }
+
     /**
      * Find the point on line start->end closest to point
      *
@@ -51,12 +74,8 @@ export default class GeoPlus
         var best_i = 0;
         var mindist = Infinity; // Will hold distance of closest point
 
-        console.log("Get closest point to ", point, array);
-
         for(var i in array) {
             const p = array[i];
-
-            console.log("Compute distance between ", p, point);
 
             var dist = google.maps.geometry.spherical.computeDistanceBetween(p, point);
 

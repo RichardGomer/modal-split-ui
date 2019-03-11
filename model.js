@@ -5,7 +5,9 @@
  * with a full flux model fairly easily.
  */
 
- const autoBind = require('auto-bind');
+import GeoPlus from './geometry';
+
+const autoBind = require('auto-bind');
 
 class HModel {
     constructor(state) {
@@ -77,6 +79,30 @@ export class JourneyModel extends HModel {
 
         this.state.gps_path = gps;
 
+    }
+
+    /**
+     * Get the journey as a serializable object
+     */
+    export() {
+        var out = {};
+
+        var segs = this.getSegments();
+        var segments = [];
+        for(var s of segs) {
+            segments.push({
+                start: s.getStart(),
+                end: s.getEnd(),
+                start_time: s.getStartTime(),
+                end_time: s.getEndTime(),
+                mode: s.getMode()
+            });
+        }
+
+        out.gps = this.getGPSPath();
+        out.segments = segments;
+
+        return out;
     }
 
     /**
@@ -184,6 +210,11 @@ export class JourneyModel extends HModel {
          // Listen for changes on segments so that adjacent ones can be updated
          segment.subscribe('change-start', this.onSegmentChange);
          segment.subscribe('change-end', this.onSegmentChange);
+
+         var j = this;
+         segment.subscribe('*', function(){
+             j.emit('segment-change');
+         })
 
          this.emit('segment-add');
      }
@@ -294,6 +325,35 @@ export class JourneyModelSegment extends HModel {
 
         this.state.end = end;
         this.emit('change-end');
+    }
+
+    /**
+     * Based on known points, work out a rough start time
+     * TODO: If two nearest points are reasonably far apart, split the difference to
+     * guess an intermediate time
+     */
+    getStartTime() {
+        return this.getTimeAtPoint(this.state.start);
+    }
+
+    getEndTime() {
+
+        if(this.state.mode === 'end')
+            return this.getStartTime();
+
+        return this.getTimeAtPoint(this.state.end);
+    }
+
+    // Get the time at an arbitrary point
+    getTimeAtPoint(point) {
+        // 1: Find the closest GPS point
+        var pointk = GeoPlus.closestPointInArray(GeoPlus.parsePoint(point), GeoPlus.parsePoint(this.getJourney().getGPSPathPoints()));
+
+        if(typeof pointk === 'undefined')
+            return "";
+
+        var npoint = this.getJourney().getGPSPath()[pointk];
+        return npoint.time;
     }
 
 }

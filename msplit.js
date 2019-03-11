@@ -61,7 +61,7 @@ function JourneyFromJSON(raw) {
 
     function iso2unix(date){
         const d = new Date(date);
-        return d.value / 1000;
+        return Math.floor(d.valueOf() / 1000);
     }
 
     var segstart = false;
@@ -84,11 +84,14 @@ function JourneyFromJSON(raw) {
         info = {
             start: rawseg['geometry']['coordinates'][0],
             end: rawseg['geometry']['coordinates'][1],
-            mode: rawseg['properties']['mode']
+            mode: rawseg['properties']['mode'],
+            endtime: iso2unix(rawseg['properties']['timestamp-end']),
+            rawendtime: rawseg['properties']['timestamp-end']
         }
 
         gpspoints.push({
-            time: iso2unix(rawseg['properties']['timestamp-end']),
+            time: info.endtime,
+            rawtime: info.rawendtime,
             point: strpoint(info.start)
         });
 
@@ -117,10 +120,13 @@ function JourneyFromJSON(raw) {
         }));
 
         gpspoints.push({
-            time: iso2unix(rawseg['properties']['timestamp-start']),
+            time: info.endtime,
+            rawtime: info.rawendtime,
             point: strpoint(info.end)
         })
     }
+
+    console.log("GPS Path for Journey", gpspoints);
 
     j.setGPSPath(gpspoints);
 
@@ -129,8 +135,20 @@ function JourneyFromJSON(raw) {
 
 function update() {
     var hash = document.location.hash.replace('#', '');
+
+    ReactDOM.unmountComponentAtNode(domContainer);
+
     if(hash.length < 1) {
-        document.getElementById('journeyui').innerHTML = "<strong>Specify test case in hash</strong>";
+
+        document.getElementById('journeyui').innerHTML = "<strong>Specify test case in hash</strong><ul id=\"jlist\"></ul>";
+        var jlist = document.getElementById('jlist');
+
+        for(var name in jnys) {
+            var li;
+            jlist.appendChild(li = document.createElement('li'));
+            li.innerHTML = "<a href=\"#" + name + "\">" + name + "</a>";
+        }
+
         return;
     }
 
@@ -138,7 +156,14 @@ function update() {
 
     var journey = JourneyFromJSON(jnys[hash]);
 
-    ReactDOM.render(<Journey journey={journey} />, domContainer);
+    var saveAnswer = function(jny) {
+        console.log("Journey was updated", jny);
+        var json = JSON.stringify(jny);
+        console.log("Journey was updated", json);
+        // TODO: Save the journey!
+    }
+
+    ReactDOM.render(<Journey journey={journey} onAnswerUpdated={saveAnswer} />, domContainer);
 }
 
 window.onhashchange = update;
