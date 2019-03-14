@@ -21,7 +21,9 @@ export default class SegmentControls extends React.Component {
 
         return (
             <div className="SegmentControls">
-                <button onClick={this.delete} className="delete" />
+                <button onClick={this.delete} className="delete">
+                    <span className="fas fa-trash"></span>
+                </button>
             </div>
         );
     }

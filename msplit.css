@@ -182,16 +182,18 @@
 
 .SegmentControls button {
     display: inline-block;
-    height: 1.9em;
+    height: 2.0em;
+    width: 4em;
     border: 0;
     padding: 5px 15px 10px 15px;
-    background: #aaa;
-    border-radius: 7px;
+    background: #f44262;
+    border-radius: 0 0 7px 7px;
     margin: 0 10px 0 0;
     font-weight: bold;
-    font-size: 0.9em;
+    font-size: 1.2em;
+    color: #fff;
 }
 
 .SegmentControls .delete::before {
-    content: "Remove stop";
+
 }
