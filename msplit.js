@@ -37,18 +37,6 @@ ReactDOM.render(<Journey journey={journey} />, domContainer);
 */
 
 /**
- * Journey from JSON
- */
-var jnys = {};
-jnys['good-trip-bad-mode'] = require("./test/journeys/GoodTripBadModeTag/inferred_trip.json");
-jnys['over-seg-1'] = require("./test/journeys/OverSegmentation-1/inferred_trip.json");
-jnys['over-seg-2'] = require("./test/journeys/OverSegmentation-2/inferred_trip.json");
-jnys['under-seg-1'] = require("./test/journeys/UnderSegmentation-1/inferred_trip.json");
-jnys['under-seg-2'] = require("./test/journeys/UnderSegmentation-2/inferred_trip.json");
-jnys['wrong-mode-change-point'] = require("./test/journeys/WrongModeChangePoint/inferred_trip.json");
-jnys['wrong-start-stop'] = require("./test/journeys/WrongStartStopPoints/inferred_trip.json");
-
-/**
  * Convert Luis' JSON into a Journey Object
  */
 function JourneyFromJSON(raw) {
@@ -133,39 +121,50 @@ function JourneyFromJSON(raw) {
     return j;
 }
 
-function update() {
-    var hash = document.location.hash.replace('#', '');
+$().ready(function(){
 
-    ReactDOM.unmountComponentAtNode(domContainer);
+    $.urlParam = function(name){
+    	var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
 
-    if(hash.length < 1) {
+        if(results == null)
+            return null;
 
-        document.getElementById('journeyui').innerHTML = "<strong>Specify test case in hash</strong><ul id=\"jlist\"></ul>";
-        var jlist = document.getElementById('jlist');
+    	return results[1] || null;
+    }
 
-        for(var name in jnys) {
-            var li;
-            jlist.appendChild(li = document.createElement('li'));
-            li.innerHTML = "<a href=\"#" + name + "\">" + name + "</a>";
+    function update() {
+        var file = $.urlParam('f');
+
+        ReactDOM.unmountComponentAtNode(domContainer);
+
+        if(file == null) {
+
+            document.getElementById('journeyui').innerHTML = "<strong>Specify journey file in f</strong>";
+            return;
         }
 
-        return;
+        // Fetch the JSON and render it
+        $.get(file, {}, function(json){
+
+
+            console.log("Fetched journey", json);
+
+            var journey = JourneyFromJSON(json);
+
+
+            var saveAnswer = function(jny) {
+                //console.log("Journey was updated", jny);
+                var json = JSON.stringify(jny);
+                console.log("Journey was updated", json);
+
+                // Post journey to quickstore
+                $.post('http://qrowdlab.websci.net/quickstore/', {k: file, v: json});
+            }
+
+            ReactDOM.render(<Journey journey={journey} onAnswerUpdated={saveAnswer} />, domContainer);
+        }, 'json');
     }
 
-    console.log("Display journey", hash, jnys[hash]);
+    update(); // Run on load
 
-    var journey = JourneyFromJSON(jnys[hash]);
-
-    var saveAnswer = function(jny) {
-        console.log("Journey was updated", jny);
-        var json = JSON.stringify(jny);
-        console.log("Journey was updated", json);
-        // TODO: Save the journey!
-    }
-
-    ReactDOM.render(<Journey journey={journey} onAnswerUpdated={saveAnswer} />, domContainer);
-}
-
-window.onhashchange = update;
-
-update(); // Run on load
+});
