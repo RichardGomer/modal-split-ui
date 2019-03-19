@@ -8,34 +8,6 @@ console.log("Begin");
 
 const domContainer = document.querySelector('#journeyui');
 
-/*
- * Hardcoded journey
- */
-
-/*
-var points = {
-    'rgdesk': '50.936626,-1.395870',
-    'jubilee': '50.933989,-1.396256',
-    'church': '50.929729,-1.394840',
-    'sainsburys': '50.926881,-1.390515'
-}
-
-var time = 1544030850;
-
-var journey = new JourneyModel([
-    new JourneyModelSegment({mode: 'walk', start: points.rgdesk}),
-    new JourneyModelSegment({mode: 'bus', start: points.jubilee}),
-    new JourneyModelSegment({start: points.sainsburys})
-], [
-    {time: time, point: points.rgdesk},
-    {time: time + 312, point: points.jubilee},
-    {time: time + 520, point: points.church},
-    {time: time + 732, point: points.sainsburys}
-]);
-
-ReactDOM.render(<Journey journey={journey} />, domContainer);
-*/
-
 /**
  * Convert Luis' JSON into a Journey Object
  */
@@ -51,6 +23,8 @@ function JourneyFromJSON(raw) {
         const d = new Date(date);
         return Math.floor(d.valueOf() / 1000);
     }
+
+    console.debug("Assembling Journey...");
 
     var segstart = false;
     var segmode = false;
@@ -84,6 +58,7 @@ function JourneyFromJSON(raw) {
         });
 
         // When mode changes, add the previous the segment
+        console.debug(" + Mode is " + info.mode);
         if(segmode !== info.mode) {
             if(segstart !== false) {
                 j.addSegment(new JourneyModelSegment({
@@ -96,12 +71,19 @@ function JourneyFromJSON(raw) {
             segstart = info.start;
             segmode = info.mode;
         }
+    }
 
-
+    // Add the last detected segment
+    if(segstart !== false) {
+        j.addSegment(new JourneyModelSegment({
+            start: strpoint(segstart),
+            mode: segmode
+        }));
     }
 
     // Add a final segment containing the end point
     if(info !== false) {
+        console.debug(" + Adding final segment");
         j.addSegment(new JourneyModelSegment({
             start: strpoint(info.end),
             mode: 'end'
