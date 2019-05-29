@@ -19,6 +19,12 @@ export default class VertMap extends React.Component {
 
         this.state = {path: GeoPlus.parsePoint(props.path), point: GeoPlus.parsePoint(props.point)};
 
+        if(typeof this.props.snapping == 'undefined') {
+            this.snapping = true;
+        } else {
+            this.snapping = props.snapping == true;
+        }
+
         // FFS Javascript :/
         this.onPan = this.onIdle.bind(this);
         this.debugPlot = this.debugPlot.bind(this);
@@ -43,7 +49,7 @@ export default class VertMap extends React.Component {
         // What a hideous pattern; anyway, this creates a new component...
         const Map = withGoogleMap( props =>
             <GoogleMap
-              defaultZoom={16}
+              defaultZoom={14}
               defaultCenter={props.point}
               defaultOptions={{
                   streetViewControl: false,
@@ -52,7 +58,8 @@ export default class VertMap extends React.Component {
                   panControl: false,
                   zoomControl: false,
                   rotateControl: false,
-                  fullscreenControl: false
+                  fullscreenControl: false,
+                  gestureHandling: 'greedy'
               }}
               onIdle={() => { this.onIdle(); }} // A layer of indeirection is required to prevent $this being broken
               ref={props.onMapMounted}
@@ -81,6 +88,11 @@ export default class VertMap extends React.Component {
      */
     onIdle() {
 
+        // Allow snapping to be disabled
+        if(!this.snapping) {
+            return;
+        }
+
         // Only snap if centre has moved >10metres
         const distm = google.maps.geometry.spherical.computeDistanceBetween(this.gmap.getCenter(), this.state.point);
 
@@ -98,7 +110,7 @@ export default class VertMap extends React.Component {
         // 1: Get center point of map
         const center = this.gmap.getCenter();
 
-        // 2: Find the closest point on each segment
+        // 2: If snapping, Find the closest point on each segment
         var cur, last;
         var best_dist = Infinity;
         var best_point;
@@ -120,7 +132,6 @@ export default class VertMap extends React.Component {
             }
         }
 
-        //this.debugPlot(best_point, 'Snap Point');
 
         // 4: And set the map to that location :)
         this.state.point = best_point;

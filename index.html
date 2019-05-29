@@ -22,5 +22,81 @@
 
      <script src="msplit.js"></script>
 
+     <script>
+        $().ready(function(){
+
+
+            $('#donebtn').click(function(){
+                $("#done").hide(); // Just in case it's used more than once...
+                $("#pre").fadeOut(function(){
+                    $('#wait').fadeIn(function(){
+                        window.setTimeout(function(){
+                            $('#wait').fadeOut(function(){
+                                $('#done').fadeIn();
+                            })
+                        }, 2000);
+                    })
+                })
+            });
+
+        });
+     </script>
+
+     <style>
+        #donebtn {
+            display: block;
+            background: #5ca52b;
+            color: #fff;
+            text-align: center;
+            font-weight: bold;
+
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 55px;
+            padding-top: 13px;
+        }
+
+        .lds-dual-ring {
+          display: inline-block;
+          width: 25px;
+          height: 25px;
+        }
+        .lds-dual-ring:after {
+          content: " ";
+          display: block;
+          width: 7px;
+          height: 7px;
+          margin: 1px;
+          border-radius: 50%;
+          border: 5px solid #fff;
+          border-color: #fff transparent #fff transparent;
+          animation: lds-dual-ring 1.2s linear infinite;
+        }
+        @keyframes lds-dual-ring {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+
+     </style>
+
+     <div id="donebtn">
+         <div id="pre">
+             Finire &rarr;
+         </div>
+         <div id="wait" style="display: none">
+             <div class="lds-dual-ring"></div>
+         </div>
+         <div id="done" style="display: none">
+             Grazie!
+         </div>
+     </div>
+
  </body>
 </html>

@@ -13,6 +13,12 @@ export class Segment extends React.Component {
 
         var s = props.segment;
 
+        if(typeof this.props.snapping == 'undefined') {
+            this.snapping = true;
+        } else {
+            this.snapping = props.snapping == true;
+        }
+
         var final = s.getPosition() === (s.getJourney().getSegments().length - 1);
 
         this.state = {segment: s, point: s.getStart(), startTime: s.getStartTime(), path: s.getJourney().getGPSPathPoints(), mode: s.getMode(), final: final};
@@ -52,7 +58,7 @@ export class Segment extends React.Component {
                 <div className="Segment">
                     <span className="timestamp">{this.timestr(this.state.startTime)}</span>
                     <ModeRibbon onModeChange={this.setMode} mode={this.state.mode} />
-                    <div className="MapOuter"><VertMap onMove={e => this.setPoint(e)} point={this.state.point} path={this.state.path} /></div>
+                    <div className="MapOuter"><VertMap onMove={e => this.setPoint(e)} point={this.state.point} path={this.state.path} snapping={this.snapping} /></div>
                 </div>
             );
         }
@@ -60,7 +66,7 @@ export class Segment extends React.Component {
             return (
                 <div className="EndSegment">
                     <span className="timestamp">{this.timestr(this.state.startTime)}</span>
-                    <div className="MapOuter"><VertMap onMove={this.setPoint} point={this.state.point} path={this.state.path} /></div>
+                    <div className="MapOuter"><VertMap onMove={this.setPoint} point={this.state.point} path={this.state.path} snapping={this.snapping} /></div>
                 </div>
                 );
         } else {
@@ -69,7 +75,7 @@ export class Segment extends React.Component {
                     <span className="timestamp">{this.timestr(this.state.startTime)}</span>
                     <ModeRibbon onModeChange={this.setMode} mode={this.state.mode} />
                     <div className="MapOuter">
-                        <VertMap onMove={e => this.setPoint(e)} point={this.state.point} path={this.state.path} />
+                        <VertMap onMove={e => this.setPoint(e)} point={this.state.point} path={this.state.path} snapping={this.snapping} />
                         <SegmentControls segment={this.state.segment} />
                     </div>
                 </div>

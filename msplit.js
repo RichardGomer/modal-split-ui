@@ -143,7 +143,11 @@ $().ready(function(){
                 $.post('http://qrowdlab.websci.net/quickstore/', {k: file, v: json});
             }
 
-            ReactDOM.render(<Journey journey={journey} onAnswerUpdated={saveAnswer} />, domContainer);
+            var snap = $.urlParam('snap');
+            var snapping = snap == null || snap == true;
+
+
+            ReactDOM.render(<Journey journey={journey} onAnswerUpdated={saveAnswer} snapping={snapping} />, domContainer);
         }, 'json');
     }
 
