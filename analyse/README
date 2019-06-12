@@ -1,0 +1,4 @@
+Tools for analysing journeys
+
+The modal-split codebase is written in ES6; it needs to be converted (using babel)
+before it will run in Node.

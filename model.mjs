@@ -7,7 +7,7 @@
 
 import GeoPlus from './geometry';
 
-const autoBind = require('auto-bind');
+import autoBind from 'auto-bind';
 
 class HModel {
     constructor(state) {
@@ -36,8 +36,6 @@ class HModel {
         if(!data) {
             data = {};
         }
-
-        console.log("Emit", type, data);
 
         // Prevent cycles by refusing to emit more events until this one is over
         if(this.locked) {
@@ -79,6 +77,122 @@ export class JourneyModel extends HModel {
 
         this.state.gps_path = gps;
 
+    }
+
+    /**
+     * Convert Luis' JSON into a JourneyModel Object
+     */
+    static fromJSON(raw) {
+
+        const j = new JourneyModel([]);
+        const points = []; // This is the list of points to show as the GPS trace
+
+        function strpoint(pt){
+            return pt[1].toString() + ',' + pt[0].toString();
+        }
+
+        function iso2unix(date){
+            const d = new Date(date);
+            return Math.floor(d.valueOf() / 1000);
+        }
+
+        //console.debug("Assembling Journey...");
+
+        var segstart = false;
+        var segmode = false;
+
+        var info = false;
+
+        var gpspoints = [];
+
+        if(typeof raw["features"] === 'undefined') {
+            console.error("Journey JSON does not contain 'features' array");
+            return;
+        }
+
+        for(var rawseg of raw["features"]) {
+
+            if(typeof rawseg !== 'object' || !rawseg['geometry'] || rawseg['geometry']['type'] !== 'LineString')
+                continue;
+
+            // Extract the useful info from the raw segment
+            info = {
+                start: rawseg['geometry']['coordinates'][0],
+                end: rawseg['geometry']['coordinates'][1],
+                mode: rawseg['properties']['mode'],
+                endtime: iso2unix(rawseg['properties']['timestamp-end']),
+                rawendtime: rawseg['properties']['timestamp-end']
+            }
+
+            // Add the point to the GPS trace
+            gpspoints.push({
+                time: info.endtime,
+                rawtime: info.rawendtime,
+                point: strpoint(info.start)
+            });
+
+            // When the mode changes, we add a new journey segment to the model
+            //console.debug(" + Mode is " + info.mode);
+            if(segmode !== info.mode) {
+                if(segstart !== false) {
+                    j.addSegment(new JourneyModelSegment({
+                        start: strpoint(segstart),
+                        mode: segmode
+                    }));
+                }
+
+                // Data from current segment becomes the start of a new segment
+                segstart = info.start;
+                segmode = info.mode;
+            }
+        }
+
+        // Finish the journey by adding the last detected segment...
+        if(segstart !== false) {
+            j.addSegment(new JourneyModelSegment({
+                start: strpoint(segstart),
+                mode: segmode
+            }));
+        }
+
+        // ...and then a final segment containing the end point
+        if(info !== false) {
+            //console.debug(" + Adding final segment");
+            j.addSegment(new JourneyModelSegment({
+                start: strpoint(info.end),
+                mode: 'end'
+            }));
+
+            gpspoints.push({
+                time: info.endtime,
+                rawtime: info.rawendtime,
+                point: strpoint(info.end)
+            })
+        }
+
+        j.setGPSPath(gpspoints);
+
+        return j;
+    }
+
+    /**
+     * Import a previously exported Journey
+     */
+    static import(exported) {
+        var jny = new JourneyModel([]);
+        jny.setGPSPath(exported.gps);
+
+        for(var i in exported.segments) {
+            var seg = exported.segments[i];
+            //console.log(" + Add segment", seg);
+            jny.addSegment(new JourneyModelSegment({
+                start: seg.start,
+                mode: seg.mode,
+                end: seg.end
+            }))
+        }
+
+        return jny;
     }
 
     /**
@@ -161,12 +275,14 @@ export class JourneyModel extends HModel {
         // Resolve A with B
         if(typeof a === 'object' && a !== null) {
 
-            if(typeof b.getStart() !== 'undefined') { // Prefer tthe start from the new segment
+            if(typeof b.getStart() !== 'undefined') { // Prefer the start from the new segment
                 a.setEnd(b.getStart());
             } else if(typeof a.getEnd() !== 'undefined') { // Else try the end of the previous one
                 b.setStart(a.getEnd());
             } else { // Otherwise it's a mystery
+                console.trace();
                 throw("Cannot add a segment with no start after a segment with no end");
+
             }
 
         }
@@ -189,7 +305,7 @@ export class JourneyModel extends HModel {
      insertSegmentAt(position, segment) {
 
          this.segmentcounter++;
-         console.log("Insert a new segment with UID", this.segmentcounter, this);
+         //console.log("Insert a new segment with UID", this.segmentcounter, this);
 
          segment.setUID(this.segmentcounter);
 
