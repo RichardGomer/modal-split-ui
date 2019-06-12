@@ -46,21 +46,21 @@ function loadJny(json) {
     }
 }
 
-console.log("Load ", fn1);
+//console.log("Load ", fn1);
 var json1 = fs.readFileSync(fn1);
 var jny1 = loadJny(json1);
 var txt1 = JourneyDiff.JourneyToText(jny1);
-console.log(txt1);
+//console.log(txt1);
 
-console.log("Load ", fn2);
+//console.log("Load ", fn2);
 var json2 = fs.readFileSync(fn2);
 var jny2 = loadJny(json2);
 var txt2 = JourneyDiff.JourneyToText(jny2);
-console.log(txt2);
+//console.log(txt2);
 
 
 var diff = JourneyDiff.diff(txt1, txt2);
-console.log("Diff");
+//console.log("Diff");
 
 diff.forEach(function(part){
   // green for additions, red for deletions

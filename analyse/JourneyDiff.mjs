@@ -9,7 +9,7 @@ const JourneyDiff = new diff.Diff();
 
 export default JourneyDiff;
 
-console.log(diff);
+//console.log(diff);
 
 // Borrowed from the lineDiff (which is not exported for re-use :-/)
 JourneyDiff.tokenize = function(value) {
@@ -45,7 +45,7 @@ JourneyDiff.JourneyToText = function(jny) {
     var segments = [];
     for(var s of segs) {
         out.push(
-            "From[" + s.getStart() + "] To[" + s.getEnd() + "] Mode[" + s.getMode() + "]"
+            "From[" + s.getStart() + "] Mode[" + s.getMode() + "]"
         );
     }
 
