@@ -367,6 +367,36 @@ export class JourneyModel extends HModel {
         this.resolveSegments(this.state.segments[p-1], this.state.segments[p], this.state.segments[1*p+1]);
     }
 
+
+    // Get the time at an arbitrary point
+    getTimeAtPoint(point, tolerance) {
+
+        if(typeof tolerance == 'undefined') {
+            tolerance = 1000;
+        }
+
+        // 1: Find the closest GPS point
+        var npoint = this.getClosestGPSPoint(point);
+
+        if(GeoPlus.distance(point, npoint.point) > tolerance)
+            return false;
+
+        if(npoint == "")
+            return false;
+
+        return npoint.time;
+    }
+
+    getClosestGPSPoint(point) {
+        var pointk = GeoPlus.closestPointInArray(GeoPlus.parsePoint(point), GeoPlus.parsePoint(this.getGPSPathPoints()));
+
+        if(typeof pointk === 'undefined')
+            return "";
+
+        var npoint = this.getGPSPath()[pointk];
+        return npoint;
+    }
+
 }
 
 
@@ -461,15 +491,12 @@ export class JourneyModelSegment extends HModel {
     }
 
     // Get the time at an arbitrary point
-    getTimeAtPoint(point) {
-        // 1: Find the closest GPS point
-        var pointk = GeoPlus.closestPointInArray(GeoPlus.parsePoint(point), GeoPlus.parsePoint(this.getJourney().getGPSPathPoints()));
+    getTimeAtPoint(point, tolerance) {
+        return this.getJourney().getTimeAtPoint(point);
+    }
 
-        if(typeof pointk === 'undefined')
-            return "";
-
-        var npoint = this.getJourney().getGPSPath()[pointk];
-        return npoint.time;
+    getClosestGPSPoint(point) {
+        return this.getJourney().getClosestGPSPoint(point);
     }
 
 }

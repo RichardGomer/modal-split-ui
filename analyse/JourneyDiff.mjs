@@ -4,32 +4,51 @@
  */
 
 import diff from 'diff';
+import GeoPlus from '../geometry';
 
 const JourneyDiff = new diff.Diff();
 
 export default JourneyDiff;
 
-//console.log(diff);
 
-// Borrowed from the lineDiff (which is not exported for re-use :-/)
+// Tokenize into words
 JourneyDiff.tokenize = function(value) {
 
-  var words = value.split(" ");
+  var words = value.split(/(?=[\n])/g); // This regex doesn't remove the matching chars
 
-  for(var i in words) {
-      words[i] = words[i] + " ";
+  // Remove times; we don't care about them
+  for(var wi in words) {
+      var w = words[wi];
+
+      if(w.match(/^GPSTime/)){
+          words.splice(wi, 1);
+      }
   }
 
   return words;
 };
 
-JourneyDiff.newequal = function(a, b){
+JourneyDiff.equals = function(a, b){
 
-    // Check if we're comparing positions; handle specially if so
-    if(a.match(/(From|To)\[([0-9\.\,]+)\]/)) {
+    var tolerance = 100; // 100m tolerance
 
-    } else {
-        return Diff.prototype.equals.call(JourneyDiff, a, b);
+    // Check if we're comparing points; handle specially if so
+    var am, bm;
+    am = a.trim().match(/Point\[([0-9\.\,\-]+)\]/i);
+    bm = b.trim().match(/Point\[([0-9\.\,\-]+)\]/i);
+
+    if( am != null && bm != null ) {
+        var pa= am[1];
+        var pb = bm[1];
+
+        var dist = GeoPlus.distance(pa, pb);
+
+        return dist <= tolerance;
+    }
+
+    else {
+        //console.log("Not points", a.trim(), b.trim());
+        return diff.Diff.prototype.equals.call(JourneyDiff, a, b);
     }
 
 }
@@ -44,8 +63,14 @@ JourneyDiff.JourneyToText = function(jny) {
     var segs = jny.getSegments();
     var segments = [];
     for(var s of segs) {
+        var time = s.getTimeAtPoint(s.getStart());
+
+        if(time == false) {
+            time = "Off-Trace";
+        }
+
         out.push(
-            "From[" + s.getStart() + "] Mode[" + s.getMode() + "]"
+            "Point[" + s.getStart() + "] GPSTime[" + time + "] Mode[" + s.getMode() + "]"
         );
     }
 

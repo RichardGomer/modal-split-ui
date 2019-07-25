@@ -2,6 +2,8 @@
  * Some extra geometry not included in the Google library
  */
 
+import geometry from 'spherical-geometry-js';
+
 export default class GeoPlus
 {
 
@@ -13,18 +15,22 @@ export default class GeoPlus
         }
 
         if(typeof p != 'string') {
-            console.error(p, "is not a string");
+            return p;
         }
 
-        p = p.split(',');
-        return new google.maps.LatLng(parseFloat(p[0]), parseFloat(p[1]));
+        p = p.split(/,/);
+        return new geometry.LatLng(parseFloat(p[0]), parseFloat(p[1]));
     }
 
     static strPoint(p) {
         if(typeof p == "array")
             return p.join(',');
-        elseif(p instanceof google.maps.LatLng)
+        elseif(p instanceof geometry.LatLng)
             return p.lat().toString() + "," + p.lng().toString();
+    }
+
+    static distance(a, b) {
+        return geometry.computeDistanceBetween(GeoPlus.parsePoint(a), GeoPlus.parsePoint(b));
     }
 
     /**
@@ -63,7 +69,7 @@ export default class GeoPlus
                                                 //   towards B
 
         // Convert back to LatLng object
-        return new google.maps.LatLng(nearest.x, nearest.y);
+        return new geometry.LatLng(nearest.x, nearest.y);
     }
 
     /**
@@ -71,13 +77,21 @@ export default class GeoPlus
      * Returns the KEY of the point, not the point itself
      */
     static closestPointInArray(point, array) {
+
+        point = GeoPlus.parsePoint(point);
+        array = GeoPlus.parsePoint(array);
+
+        if(typeof point == 'undefined') {
+            console.error("Point is undefined", point, array);
+        }
+
         var best_i = 0;
         var mindist = Infinity; // Will hold distance of closest point
 
         for(var i in array) {
             const p = array[i];
 
-            var dist = google.maps.geometry.spherical.computeDistanceBetween(p, point);
+            var dist = geometry.computeDistanceBetween(p, point);
 
             if(dist < mindist) {
                 best_i = i;

@@ -1,3 +1,5 @@
 dist/
 node_modules/
 .cache/
+analyse/ql5-analysis
+analyse/*.zip
