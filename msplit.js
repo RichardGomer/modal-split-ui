@@ -21,39 +21,47 @@ $().ready(function(){
 
     function update() {
         var file = $.urlParam('f');
+        var blank = $.urlParam('blank');
 
         ReactDOM.unmountComponentAtNode(domContainer);
 
-        if(file == null) {
+        function render(journey) {
 
-            document.getElementById('journeyui').innerHTML = "<strong>Specify journey file in f</strong>";
-            return;
-        }
-
-        // Fetch the JSON and render it
-        $.get(file, {}, function(json){
-
-
-            console.log("Fetched journey", json);
-
-            var journey = JourneyModel.fromJSON(json);
-
-
+            // Save answer to quickstore once completed
             var saveAnswer = function(jny) {
-                //console.log("Journey was updated", jny);
                 var json = JSON.stringify(jny);
-                console.log("Journey was updated", json);
-
-                // Post journey to quickstore
                 $.post('http://qrowdlab.websci.net/quickstore/', {k: file, v: json});
             }
 
             var snap = $.urlParam('snap');
             var snapping = snap == null || snap == true;
 
+            console.log("Render", journey, "in", domContainer);
 
             ReactDOM.render(<Journey journey={journey} onAnswerUpdated={saveAnswer} snapping={snapping} />, domContainer);
-        }, 'json');
+        }
+
+        console.log(file, blank);
+
+        if(file == null) {
+            document.getElementById('journeyui').innerHTML = "<strong>Specify journey file in f</strong>";
+            return;
+        } else if(blank != null) {
+            // In blank/overrride/"fuck it" mode, we still save using the file name, but
+            // begin with a blank journey
+            JourneyModel.getBlank(render);
+        } else {
+            // Fetch the JSON and render it
+            $.get(file, {}, function(json){
+
+                console.log("Fetched journey", json);
+                var journey = JourneyModel.fromJSON(json);
+                render(journey);
+
+            }, 'json');
+        }
+
+
     }
 
     update(); // Run on load

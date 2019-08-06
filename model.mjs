@@ -67,6 +67,7 @@ class HModel {
 export class JourneyModel extends HModel {
 
     constructor(segments, gps) {
+
         super({gps_path: [], segments: []});
 
         this.segmentcounter = 0; // Count segments as they're added to assign a unique ID
@@ -77,6 +78,51 @@ export class JourneyModel extends HModel {
 
         this.state.gps_path = gps;
 
+    }
+
+    /**
+     * Create a blank journey (passed to callback)
+     */
+    static getBlank(then) {
+
+
+        var start = '';
+        var end = '46.067194,11.121457'; // Trento centre
+
+        // Try to get the start from GPS
+        if("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                start = position.coords.latitude.toString() + ',' + position.coords.longitude.toString();
+                setup();
+            });
+        } else { // Or use a predefined location
+            start = "46.064900,11.142689"; // Povo-Mesiano, Railway station near Trento
+            setup();
+        }
+
+        // Creates the journey with start/stop points
+        function setup(){
+            // Midnight yesterday
+            var mny = new Date(Date.now() - 3600 * 24 * 1000);
+            mny.setHours(0,0,0,0);
+
+            var j = new JourneyModel([]);
+            j.addSegment(new JourneyModelSegment({
+                start: start,
+                mode: 'walk',
+                startTime: mny.getTime() / 1000 + 3600 * 8 // 0800
+            }));
+
+            j.addSegment(new JourneyModelSegment({
+                start: end,
+                mode: 'end',
+                startTime: mny.getTime() / 1000 + 3600 * 9 // 0900
+            }));
+
+            j.setGPSPath([]);
+
+            then(j);
+        }
     }
 
     /**
@@ -209,7 +255,9 @@ export class JourneyModel extends HModel {
                 end: s.getEnd(),
                 start_time: s.getStartTime(),
                 end_time: s.getEndTime(),
-                mode: s.getMode()
+                mode: s.getMode(),
+                destination: s.isDestination(),
+                origin: s.isOrigin()
             });
         }
 
@@ -268,7 +316,7 @@ export class JourneyModel extends HModel {
      * It takes (up to) three segments; B must always be provided, and always has priority. If A or C does
      * not exist (i.e. B is a start or end) then some non-Object should be passed
      *
-     * TODO: Presumably those points should also be on the GPS path
+     *
      */
     resolveSegments(a, b, c) {
 
@@ -326,6 +374,7 @@ export class JourneyModel extends HModel {
          // Listen for changes on segments so that adjacent ones can be updated
          segment.subscribe('change-start', this.onSegmentChange);
          segment.subscribe('change-end', this.onSegmentChange);
+         segment.subscribe('change-destination', this.onSegmentChange);
 
          var j = this;
          segment.subscribe('*', function(){
@@ -354,17 +403,24 @@ export class JourneyModel extends HModel {
             p++;
         }
 
-        this.resolveSegments(this.state.segments[position-1], this.state.segments[position]);
+        // In most cases we need to match up the newly adjacent segments
+        if(typeof this.state.segments[position]  !== 'undefined')
+            this.resolveSegments(this.state.segments[position-1], this.state.segments[position]);
+
         this.emit('segment-delete');
     }
 
 
     /**
-    * Resolve segment changes
-    */
+     * Resolve segment changes
+     */
     onSegmentChange(data, seg) {
         var p = seg.getPosition();
         this.resolveSegments(this.state.segments[p-1], this.state.segments[p], this.state.segments[1*p+1]);
+
+        var n = this.state.segments[p+1];
+        if(typeof n != 'undefined')
+            n.emit("change-destination");
     }
 
 
@@ -378,16 +434,20 @@ export class JourneyModel extends HModel {
         // 1: Find the closest GPS point
         var npoint = this.getClosestGPSPoint(point);
 
-        if(GeoPlus.distance(point, npoint.point) > tolerance)
+        if(npoint == "")
             return false;
 
-        if(npoint == "")
+        if(GeoPlus.distance(point, npoint.point) > tolerance)
             return false;
 
         return npoint.time;
     }
 
     getClosestGPSPoint(point) {
+
+        if(this.getGPSPathPoints().length < 1)
+            return "";
+
         var pointk = GeoPlus.closestPointInArray(GeoPlus.parsePoint(point), GeoPlus.parsePoint(this.getGPSPathPoints()));
 
         if(typeof pointk === 'undefined')
@@ -397,13 +457,28 @@ export class JourneyModel extends HModel {
         return npoint;
     }
 
+    getStartTime() {
+        return this.state.segments[0].getStartTime();
+    }
+
+    getEndTime() {
+        return this.state.segments[this.state.segments.length - 1].getStartTime();
+    }
+
 }
+
+JourneyModel.count = 0; // For giving IDs to journeys
 
 
 export class JourneyModelSegment extends HModel {
 
     constructor(state) {
         super(state);
+
+        this.state.destination = this.state.mode === 'end';
+
+        if(typeof this.state.startTime == 'undefined')
+            this.state.startTime = false;
     }
 
     getUID() {
@@ -452,7 +527,17 @@ export class JourneyModelSegment extends HModel {
             return;
 
         this.state.mode = mode;
+
+        if(this.state.mode === 'end') {
+            this.state.destination = true;
+        }
+
         this.emit('change-mode');
+    }
+
+    setDestination(dest) {
+        this.state.destination = dest == true;
+        this.emit('change-destination');
     }
 
     setStart(start) {
@@ -473,18 +558,60 @@ export class JourneyModelSegment extends HModel {
         this.emit('change-end');
     }
 
+    // Check if this segment is an "end" point (or destination)
+    isDestination() {
+        var segs = this.getJourney().getSegments();
+        if(this.state.destination || this == segs[segs.length - 1])
+            return true;
+        else
+            return false;
+    }
+
+    // Check if this segment is an origin point (i.e. is the first segment, or occurs
+    // after an end segment)
+    isOrigin() {
+
+        // Rarely, there might be two destinations next to one another; but that doesn't
+        // make the second one an origin! i.e. a destination can never be an origin
+        if(this.isDestination())
+            return false;
+
+        // Normally we need to consult the overall journey
+        var segs = this.getJourney().getSegments();
+        for(var i in segs) {
+            var s = segs[i];
+            if(s === this) { // We have to find ourselves, and check the segment before
+                if(i == 0) { // First segment
+                    return true;
+                } else { // Subsequent segments
+                    return segs[i-1].isDestination();
+                }
+            }
+        }
+    }
+
+
+    // By default, start time is obtained from the GPS trace; but can be set
+    // manually
+    setStartTime(time) {
+        this.state.startTime = time;
+        this.emit('change-time');
+    }
+
     /**
      * Based on known points, work out a rough start time
-     * TODO: If two nearest points are reasonably far apart, split the difference to
-     * guess an intermediate time
      */
     getStartTime() {
+
+        if(this.state.startTime !== false)
+            return this.state.startTime;
+
         return this.getTimeAtPoint(this.state.start);
     }
 
     getEndTime() {
 
-        if(this.state.mode === 'end')
+        if(this.isDestination()) // Destinations only have an arrival time
             return this.getStartTime();
 
         return this.getTimeAtPoint(this.state.end);

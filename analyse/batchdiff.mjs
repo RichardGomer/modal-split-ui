@@ -46,7 +46,7 @@ function loadJny(json) {
 
     if(ob.segments) {
         return JourneyModel.import(ob);
-    } else { // TODO: Sanity check here...
+    } else {
         return JourneyModel.fromJSON(ob);
     }
 }

@@ -28,22 +28,17 @@
 }
 
 .Segment:nth-of-type(1) {
-    margin-top: 150px;
+    margin-top: 170px;
 }
 
-.Segment:nth-of-type(1) .ModeRibbon::before {
-    content: " ";
-    display: block;
-    height: 158px;
-    background: #ccc;
-    position: relative;
-    top: -160px;
-}
+
 
 .Segment, .EndSegment {
     display: flex;
+    align-items: stretch;
     flex-direction: row;
-    align-items: flex-end;
+    flex-wrap: wrap;
+
     width: 100%;
     position: relative;
 }
@@ -54,25 +49,12 @@
     background: #ccc;
 }
 
-.timestamp {
-    display: block;
-    position: absolute;
-    top: 5px;
-    left: 0;
-    width: 70px;
-    z-index: 30;
-    font-weight: bold;
-    color: #111;
-    text-align: center;
-}
 
 .ModeRibbon, .EndSegment::before {
-    display: block;
+
     width: 70px;
     position: relative;
     /*top: 150px;*/
-
-    height: 274px;
 
     text-align: center;
 
@@ -111,29 +93,49 @@
     margin: 0;
 }
 
+.Segment .stopinfo, .EndSegment .stopinfo {
+    position: relative; /* Hoist up to offset with ribbon */
+    top: -150px;
+
+    margin: 0 0 60px 20px; /* Space for add stop button, arrow */
+
+    border-radius: 18px;
+    position: relative;
+    border: 10px solid #aaa;
+    background: #aaa;
+    overflow: visible;
+
+    flex-grow: 1; /* Stretch to fit width */
+}
+
 /** The triangle/pointer on the LHS of the map container **/
-.Segment .MapOuter::before, .EndSegment .MapOuter::before {
+.Segment .stopinfo::before, .EndSegment .stopinfo::before {
     content: " ";
     display: block;
     position: absolute;
     left: -30px;
-    top: 35%;
+    top: 111px;
     width: 30px;
     height: 60px;
     background: #aaa;
     clip-path: polygon(100% 0, 0 50%, 100% 100%);
 }
 
+.timestamp {
+    display: block;
+    position: absolute;
+    top: 148px;
+    left: -102px;
+    width: 70px;
+    z-index: 30;
+    font-weight: bold;
+    color: #111;
+    text-align: center;
+}
+
 .Segment .MapOuter, .EndSegment .MapOuter {
-    flex: 1;
     height: 220px;
-    margin: 0 0 0 20px;
-    border-radius: 18px;
-    position: relative;
-    border: 10px solid #aaa;
-    overflow: visible;
-    position: relative;
-    top: -150px;
+    position: relative; /* to position the overlay against */
 }
 
 .MapOuter::after { /* Apply a mask over the whole map to indicate the point of interest (centre) */
@@ -146,6 +148,7 @@
     right: 0;
     pointer-events: none;
     opacity: 0.4;
+    border-radius: 8px;
 }
 
 .Segment .Map, .EndSegment .Map
@@ -165,7 +168,7 @@
     overflow: display;
     position: relative;
     z-index: 22;
-    top: -142px;
+    top: -200px;
 }
 
 .SegmentInserter::before
@@ -185,11 +188,89 @@
     border-radius: 1.25em;
 }
 
-.SegmentControls {
-    text-align: right;
+.stopinfo p {
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+    margin: 5px 0 0 0;
 }
 
-.SegmentControls button {
+
+.SegmentControls {
+    text-align: right;
+    position: relative;
+}
+
+.SegmentControls span.icon {
+    display: block;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    margin-top: -11px;
+}
+
+    .SegmentControls span.icon::before {
+
+    }
+
+    .SegmentControls span.icon-destination::before {
+        content: url('assets/dest.png');
+    }
+
+    .SegmentControls span.icon-origin::before {
+        content: url('assets/origin.png');
+    }
+
+    .SegmentControls span.icon-change::before {
+        content: url('assets/change.png');
+    }
+
+.SegmentControls .destToggle {
+    display: block;
+    margin: 15px auto 10px auto;
+    text-align: center;
+}
+
+.destToggle .loption, .destToggle .roption {
+    display: inline-block;
+    width: 90px;
+    padding: 0 10px 0 10px;
+    position: relative;
+    top: -8px;
+}
+
+
+.SegmentControls .destToggle .inner {
+    display: inline-block;
+    width: 48px;
+    border-radius: 12px;
+    height: 24px;
+    background: #fff;
+    border: 2px solid #fff;
+    padding: 0;
+}
+
+.SegmentControls .destToggle .inner span.toggle {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #777;
+    border-radius: 10px;
+    background: #ccc;
+    pointer-events: none; /* Avoid blcoking clicks on parent */
+}
+
+.SegmentControls .destToggle .inner input {
+    display: none;
+}
+
+.SegmentControls .destToggle .inner input:checked + span.toggle {
+    margin-left: 23px;
+    background: #31d65d;
+}
+
+
+.SegmentControls button { /* Delete button */
     display: inline-block;
     height: 2.0em;
     width: 4em;
@@ -201,7 +282,47 @@
     font-weight: bold;
     font-size: 1.2em;
     color: #fff;
+    position: absolute;
+    bottom: -2em;
+    right: 0;
+}
 
+.SegmentControls .time_picker_preview {
+    height: 40px;
+    margin: 0;
+    position: relative;
+    top: -8px;
+}
+
+.SegmentControls .time_picker_container {
+    max-width: 320px;
+    margin: 0 auto 0 auto;
+}
+
+.react_times_button {
+    color: #fff !important;
+    background: none !important;
+    box-shadow: none !important;
+    margin-bottom: 10px;
+}
+
+    .react_times_button .preview_container {
+        font-weight: bold;
+        border-bottom: 1px solid #fff;
+        height: 44px;
+        padding: 0 6px 0 34px;
+    }
+
+    .react_times_button .preview_container svg {
+        left: 3px;
+    }
+
+    .react_times_button svg path {
+        fill: #ddd;
+    }
+
+.SegmentControls .modal_container {
+    z-index: 30 !important;
 }
 
 .SegmentControls .delete::before {

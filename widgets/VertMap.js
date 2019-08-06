@@ -47,8 +47,9 @@ export default class VertMap extends React.Component {
         console.log("(Re-)rendering VertMap");
 
         // What a hideous pattern; anyway, this creates a new component...
-        const Map = withGoogleMap( props =>
-            <GoogleMap
+        const Map = withGoogleMap( props => {
+            console.log("Creating GoogleMap with center", props.point);
+            return <GoogleMap
               defaultZoom={14}
               defaultCenter={props.point}
               defaultOptions={{
@@ -66,6 +67,7 @@ export default class VertMap extends React.Component {
             >
               <Polyline path={props.path} geodesic={true} options={{strokeColor: "#0000ff", strokeOpacity: 0.75, strokeWeight: 3}} />
             </GoogleMap>
+        }
         );
 
         // ... that we instantiate here
@@ -103,7 +105,7 @@ export default class VertMap extends React.Component {
         console.log("Map has moved ", distm, this.gmap.getCenter());
 
         if(this.state.path.length < 2) {
-            console.error("No path was supplied to the VertMap; cannot snap!");
+            console.debug("No path was supplied to the VertMap; cannot snap!");
             return;
         }
 
@@ -132,6 +134,7 @@ export default class VertMap extends React.Component {
             }
         }
 
+        console.log("Best point is ", best_point);
 
         // 4: And set the map to that location :)
         this.state.point = best_point;

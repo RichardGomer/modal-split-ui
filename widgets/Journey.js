@@ -39,15 +39,14 @@ export default class Journey extends React.Component {
 
         for(var i in segs) {
             var s = segs[i];
-            if(i < segs.length - 1){
-                console.log("Render segment",i,  s);
-                els.push(<Segment key={"seg" + s.getUID().toString()} segment={s} onModeChange={() => {}} snapping={this.snapping}></Segment>);
-                els.push(<SegmentInserter key={"ins" + s.getUID().toString()} after={s}></SegmentInserter>);
-            }
-        }
 
-        console.log("Render end segment", i, s);
-        els.push(<Segment key={"seg" + s.getUID().toString()} segment={s}  snapping={this.snapping}></Segment>)
+            console.log("Render segment",i,  s);
+            els.push(<Segment key={"seg" + s.getUID().toString()} segment={s} onModeChange={() => {}} snapping={this.snapping}></Segment>);
+
+            if(!s.isDestination()) // No inserter required after destinations
+                els.push(<SegmentInserter key={"ins" + s.getUID().toString()} after={s}></SegmentInserter>);
+
+        }
 
         return ( <div>
                     {els}

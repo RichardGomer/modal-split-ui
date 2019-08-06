@@ -2,7 +2,7 @@
  * Some extra geometry not included in the Google library
  */
 
-import geometry from 'spherical-geometry-js';
+import * as geometry from 'spherical-geometry-js';
 
 export default class GeoPlus
 {
@@ -19,13 +19,15 @@ export default class GeoPlus
         }
 
         p = p.split(/,/);
-        return new geometry.LatLng(parseFloat(p[0]), parseFloat(p[1]));
+
+        // We need to use the LatLng provided by the external maps API, not the local implementation
+        return new google.maps.LatLng(parseFloat(p[0]), parseFloat(p[1]));
     }
 
     static strPoint(p) {
         if(typeof p == "array")
             return p.join(',');
-        elseif(p instanceof geometry.LatLng)
+        elseif(p instanceof google.maps.LatLng)
             return p.lat().toString() + "," + p.lng().toString();
     }
 
@@ -69,7 +71,7 @@ export default class GeoPlus
                                                 //   towards B
 
         // Convert back to LatLng object
-        return new geometry.LatLng(nearest.x, nearest.y);
+        return new google.maps.LatLng(nearest.x, nearest.y);
     }
 
     /**
