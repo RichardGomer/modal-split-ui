@@ -30,7 +30,7 @@ $().ready(function(){
             // Save answer to quickstore once completed
             var saveAnswer = function(jny) {
                 var json = JSON.stringify(jny);
-                $.post('http://qrowdlab.websci.net/quickstore/', {k: file, v: json});
+                $.post('https://qrowdlab.websci.net/quickstore/', {k: file, v: json});
             }
 
             var snap = $.urlParam('snap');
@@ -55,7 +55,14 @@ $().ready(function(){
             $.get(file, {}, function(json){
 
                 console.log("Fetched journey", json);
-                var journey = JourneyModel.fromJSON(json);
+
+                // JSON could be our native format...
+                if(typeof json["segments"] !== 'undefined') {
+                    var journey = JourneyModel.import(json);
+                } else { // ...or what we get from InfAI
+                    var journey = JourneyModel.fromJSON(json);
+                }
+
                 render(journey);
 
             }, 'json');

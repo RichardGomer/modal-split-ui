@@ -3,3 +3,7 @@ node_modules/
 .cache/
 analyse/ql5-analysis
 analyse/*.zip
+
+# Don't include any test data!
+*.json
+*.kml

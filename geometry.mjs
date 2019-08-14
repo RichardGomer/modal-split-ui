@@ -2,10 +2,31 @@
  * Some extra geometry not included in the Google library
  */
 
-import * as geometry from 'spherical-geometry-js';
+import nodegeometry from 'spherical-geometry-js';
+
+var LatLng;
+var geometry;
+
+// If we're using the real google library (e.g. in browser) we need to use the "real" LatLng implementation or maps break :/
+// otherwise, we need to fall back to the ported implementation from spherical-geometry-js
+if(typeof google !== 'undefined') {
+    LatLng = google.maps.LatLng;
+    geometry = google.maps.geometry.spherical;
+    //console.log("Using google.maps.LatLng", LatLng);
+} else {
+    LatLng = nodegeometry.LatLng;
+    geometry = nodegeometry;
+    //console.log("Using ported LatLng", LatLng);
+}
+
 
 export default class GeoPlus
 {
+    // Make underlying spherical geometry library available, since we bothered to resolve it
+    // 'get' means we don't need to use brackets to call it...
+    static get spherical() {
+        return geometry;
+    }
 
     static parsePoint(p) {
 
@@ -18,16 +39,20 @@ export default class GeoPlus
             return p;
         }
 
-        p = p.split(/,/);
+        var sp = p.replace(/\(|\)/, '').split(/,/);
 
         // We need to use the LatLng provided by the external maps API, not the local implementation
-        return new google.maps.LatLng(parseFloat(p[0]), parseFloat(p[1]));
+        try {
+            return new LatLng(parseFloat(sp[0]), parseFloat(sp[1]));
+        } catch (e) {
+            console.error("Could not parse %s %s", typeof p, p);
+        }
     }
 
     static strPoint(p) {
         if(typeof p == "array")
             return p.join(',');
-        elseif(p instanceof google.maps.LatLng)
+        else if(p instanceof LatLng)
             return p.lat().toString() + "," + p.lng().toString();
     }
 
@@ -71,14 +96,29 @@ export default class GeoPlus
                                                 //   towards B
 
         // Convert back to LatLng object
-        return new google.maps.LatLng(nearest.x, nearest.y);
+        return new LatLng(nearest.x, nearest.y);
+    }
+
+    static midpoint(a, b){
+        a = GeoPlus.parsePoint(a);
+        b = GeoPlus.parsePoint(b);
+
+        var lat = a.lat() + (b.lat() - a.lat())/2;
+        var lng = a.lng() + (b.lng() - a.lng())/2;
+
+        console.log("Midpoint %s %s %s,%s", a, b, lat, lng)
+
+        return new LatLng(lat, lng);
     }
 
     /**
      * Given an array of points, find the one that's closest to the given point
      * Returns the KEY of the point, not the point itself
      */
-    static closestPointInArray(point, array) {
+    static closestPointInArray(point, array, start) {
+
+        if(typeof start == 'undefined')
+            start = 0;
 
         point = GeoPlus.parsePoint(point);
         array = GeoPlus.parsePoint(array);
@@ -87,10 +127,13 @@ export default class GeoPlus
             console.error("Point is undefined", point, array);
         }
 
+        //console.log("Point:\n", point, "\n\nList:\n", array);
+
         var best_i = 0;
         var mindist = Infinity; // Will hold distance of closest point
 
-        for(var i in array) {
+        //console.log("Find point closest to %s", point);
+        for(var i = start; i < array.length; i++) {
             const p = array[i];
 
             var dist = geometry.computeDistanceBetween(p, point);
@@ -98,8 +141,14 @@ export default class GeoPlus
             if(dist < mindist) {
                 best_i = i;
                 mindist = dist;
+                //console.log(":  %s = %im **", p, dist)
+            } else {
+                //console.log(":  %s = %im", p, dist)
             }
         }
+
+        //console.error("Closest point to %s is %i %im away", array[best_i], best_i, mindist);
+
 
         return best_i;
     }

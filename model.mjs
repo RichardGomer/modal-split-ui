@@ -9,6 +9,8 @@ import GeoPlus from './geometry';
 
 import autoBind from 'auto-bind';
 
+import hri from 'human-readable-ids';
+
 class HModel {
     constructor(state) {
 
@@ -77,6 +79,8 @@ export class JourneyModel extends HModel {
         }
 
         this.state.gps_path = gps;
+
+        this.state.errors = [];
 
     }
 
@@ -228,14 +232,22 @@ export class JourneyModel extends HModel {
         var jny = new JourneyModel([]);
         jny.setGPSPath(exported.gps);
 
+        if(typeof exported.errors != 'undefined')
+            jny.setErrors(exported.errors);
+
         for(var i in exported.segments) {
             var seg = exported.segments[i];
-            //console.log(" + Add segment", seg);
-            jny.addSegment(new JourneyModelSegment({
+            var s;
+            jny.addSegment(s = new JourneyModelSegment({
                 start: seg.start,
                 mode: seg.mode,
-                end: seg.end
+                end: seg.end,
+                startTime: seg.start_time,
+                destination: seg.destination,
+                identifier: seg.identifier
             }))
+
+            //console.log(" + Add segment", seg, s.getStartTime());
         }
 
         return jny;
@@ -257,12 +269,14 @@ export class JourneyModel extends HModel {
                 end_time: s.getEndTime(),
                 mode: s.getMode(),
                 destination: s.isDestination(),
-                origin: s.isOrigin()
+                origin: s.isOrigin(),
+                identifier: s.getIdentifier()
             });
         }
 
         out.gps = this.getGPSPath();
         out.segments = segments;
+        out.errors = this.state.errors;
 
         return out;
     }
@@ -394,7 +408,7 @@ export class JourneyModel extends HModel {
     */
     deleteSegment(position) {
         this.state.segments.splice(position, 1);
-        console.log("Removed segment", position, this.state.segments);
+        //console.log("Removed segment", position, this.state.segments);
 
         // Renumber segments
         var p = 0;
@@ -457,6 +471,13 @@ export class JourneyModel extends HModel {
         return npoint;
     }
 
+    getClosestGPSPointPosition(point, start) {
+        if(this.getGPSPathPoints().length < 1)
+            return "";
+
+        return GeoPlus.closestPointInArray(GeoPlus.parsePoint(point), GeoPlus.parsePoint(this.getGPSPathPoints()), start);
+    }
+
     getStartTime() {
         return this.state.segments[0].getStartTime();
     }
@@ -465,6 +486,17 @@ export class JourneyModel extends HModel {
         return this.state.segments[this.state.segments.length - 1].getStartTime();
     }
 
+
+    /**
+     * We can record errors that are inserted
+     */
+    addError(str) {
+        this.state.errors.push(str);
+    }
+
+    setErrors(a) {
+        this.state.errors = a;
+    }
 }
 
 JourneyModel.count = 0; // For giving IDs to journeys
@@ -475,7 +507,10 @@ export class JourneyModelSegment extends HModel {
     constructor(state) {
         super(state);
 
-        this.state.destination = this.state.mode === 'end';
+        this.state.destination = typeof state.destination == 'undefined' ? this.state.mode === 'end' : state.destination;
+
+        if(typeof this.state.identifier == 'undefined')
+            this.state.identifier = hri.hri.random();
 
         if(typeof this.state.startTime == 'undefined')
             this.state.startTime = false;
@@ -624,6 +659,11 @@ export class JourneyModelSegment extends HModel {
 
     getClosestGPSPoint(point) {
         return this.getJourney().getClosestGPSPoint(point);
+    }
+
+    // Get the identifier
+    getIdentifier() {
+        return this.state.identifier;
     }
 
 }

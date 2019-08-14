@@ -8,7 +8,7 @@
 import fs from 'fs';
 import JSON from 'JSON';
 
-import { JourneyModel, JourneyModelSegment } from '../model'
+import { JourneyModel, JourneyModelSegment } from './model'
 
 import JourneyComparator from './JourneyComparator'
 
