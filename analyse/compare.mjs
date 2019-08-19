@@ -15,7 +15,7 @@ import JourneyComparator from './JourneyComparator'
 const [,, ...args] = process.argv;
 
 if(args.length < 2) {
-    console.error("USAGE: compare.js journey1.json journey2.json");
+    console.error("USAGE: compare.mjs journey1.json journey2.json");
     console.log("JSON can either be raw, or processed; format is auto-detected.");
     console.log("All Journeys are loaded as JourneyModel objects");
     process.exit();
