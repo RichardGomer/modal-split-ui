@@ -1,6 +1,9 @@
-Modal Split Interface
+QROWD Modal Split Interface
+============================
 
-A UI for describing multi-modal journeys, written in React.
+A UI for viewing and editing multi-modal journeys, written in React as part of the QROWD project.
+
+[![DOI](https://zenodo.org/badge/157371166.svg)](https://zenodo.org/badge/latestdoi/157371166)
 
 
 Build
@@ -13,6 +16,8 @@ Built with ParcelJS
 `parcel index.html`
 
 Note: Most of the javascript files rely on Node's experimental ESM module loader, hence the `.mjs` extension. Enabling the ESM loader currently requires command line flags (`--harmony --experimental-modules`), but parcel seems to cope with them OK. Those arguments are included in the shebang lines of executable scripts, so Linux users shouldn't need to worry.
+
+NB: The map component uses the Google Maps API; you'll need to get an API key from developers.google.com and update `index.html`
 
 
 Format

@@ -43,9 +43,8 @@ var jny1 = loadJny(json1);
 console.error("Loaded OK");
 
 // Decide how many errors
-// 0.5 * segments?
 var jlen = jny1.getSegments().length;
-var numerrs = 0.5 * jlen;
+var numerrs = 0.3 * jlen;
 console.error("Journey length is %i, adding %i errors", jlen, numerrs);
 
 // Pick the types, at random
@@ -54,19 +53,25 @@ function pickRand(array){
     return array[k];
 }
 
-var errclasses = {'badpoint': 0, 'overseg': 0, 'underseg': 0, 'badmode': 0}
+// Bad point / bad mode errors are inserted
+var errclasses = {'badpoint': 0, 'badmode': 0}
 var types = Object.keys(errclasses);
 for(var i = 0; i < numerrs; i++) {
     var type = types[Math.floor(Math.random() * types.length)];
     errclasses[type]++;
 }
 
-// For testing, force one of each
-//var errclasses = {'badpoint': 1, 'overseg': 1, 'underseg': 1, 'badmode': 1}
+// Then we either undersegment OR oversegment; not both!
+// Rationale: We wish to understand which is preferable, so prefer to keep the cases distinct
+if(Math.random() > 0.5) {
+    errclasses['overseg'] = numerrs;
+} else {
+    errclasses['underseg'] = numerrs;
+}
 
-// Insert the errors, in order shown in class outline doc
-// Make a note of which segments are errors, and original values
+// Insert errors on chosen segments
 
+// Bad points need to be on real changes if possible!
 for(var i = 0; i < errclasses['badpoint']; i++){
     new BadPointInserter().apply(jny1);
 }
@@ -79,6 +84,7 @@ for(var i = 0; i < errclasses['underseg']; i++){
     new UnderSegmentationInserter().apply(jny1);
 }
 
+// Bad modes can go anywhere
 for(var i = 0; i < errclasses['badmode']; i++){
     new BadModeInserter().apply(jny1);
 }

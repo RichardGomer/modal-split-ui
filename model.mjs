@@ -244,7 +244,9 @@ export class JourneyModel extends HModel {
                 end: seg.end,
                 startTime: seg.start_time,
                 destination: seg.destination,
-                identifier: seg.identifier
+                identifier: seg.identifier,
+                error: seg.error,
+                errorDesc: seg.error_desc
             }))
 
             //console.log(" + Add segment", seg, s.getStartTime());
@@ -270,7 +272,9 @@ export class JourneyModel extends HModel {
                 mode: s.getMode(),
                 destination: s.isDestination(),
                 origin: s.isOrigin(),
-                identifier: s.getIdentifier()
+                identifier: s.getIdentifier(),
+                error: s.isError(),
+                error_desc: s.isError() ? s.getError() : ''
             });
         }
 
@@ -664,6 +668,21 @@ export class JourneyModelSegment extends HModel {
     // Get the identifier
     getIdentifier() {
         return this.state.identifier;
+    }
+
+    // Mark this segment as containing a deliberate error
+    setError(desc) {
+        this.state.error = true;
+        this.state.errorDesc = desc;
+        this.journey.addError(desc); // Also record error on journey; segments can go missing!
+    }
+
+    isError() {
+        return this.state.error;
+    }
+
+    getError() {
+        return this.state.errorDesc;
     }
 
 }

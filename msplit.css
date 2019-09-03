@@ -1,3 +1,8 @@
+#journeyui {
+    max-width: 500px;
+    margin: 0 auto 0 auto;
+}
+
 .car {
     background: #ff72d9;
 }

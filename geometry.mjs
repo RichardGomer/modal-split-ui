@@ -106,7 +106,7 @@ export default class GeoPlus
         var lat = a.lat() + (b.lat() - a.lat())/2;
         var lng = a.lng() + (b.lng() - a.lng())/2;
 
-        console.log("Midpoint %s %s %s,%s", a, b, lat, lng)
+        //console.log("Midpoint %s %s %s,%s", a, b, lat, lng)
 
         return new LatLng(lat, lng);
     }

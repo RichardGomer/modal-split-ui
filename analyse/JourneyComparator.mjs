@@ -212,5 +212,5 @@ export default class JourneyComparator {
      // TODO: Implement some comparisons; need at least:
      // point-by-point comparison
      // mode comparison
-     // 
+     //
 }

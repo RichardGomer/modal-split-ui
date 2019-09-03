@@ -22,7 +22,7 @@ export default class OverSegmentationInserter
 
         do {
             var n = Math.floor(Math.random() * (segments.length - 1));
-        } while(segments[n].isDestination());
+        } while(segments[n].isDestination() || segments[n].isError());
 
         var s = segments[n];
 
@@ -49,6 +49,7 @@ export default class OverSegmentationInserter
         });
 
         j.insertSegmentAt(n+1, ns);
+        ns.error = true;
 
         j.addError('OVERSEGMENT BY ADDING ' + ns.getIdentifier());
     }

@@ -22,7 +22,7 @@
 
         do {
          var n = Math.floor(Math.random() * (segments.length - 1));
-        } while(segments[n].isDestination());
+        } while(segments[n].isDestination() || segments[n].isError());
 
         var s = segments[n];
 
@@ -50,6 +50,7 @@
         path[gpspos].point = newpoint;
 
         s.setStart(newpoint);
+        s.error = true;
 
         j.addError('BADPOINT ' + s.getIdentifier() + ' ' + distance + 'm ' + original + '->' + newpoint);
     }
