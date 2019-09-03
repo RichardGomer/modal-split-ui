@@ -25,7 +25,7 @@ export class SegmentInserter extends React.Component {
 
         return (
             <div className="SegmentInserter" onClick={this.insert}>
-
+                <span>+ {window.strings.addpoint}</span>
             </div>
         );
     }

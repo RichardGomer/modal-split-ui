@@ -8,7 +8,6 @@ console.log("Begin");
 
 const domContainer = document.querySelector('#journeyui');
 
-$().ready(function(){
 
     $.urlParam = function(name){
     	var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -18,6 +17,27 @@ $().ready(function(){
 
     	return results[1] || null;
     }
+
+var lang = $.urlParam('lang');
+if(lang == null || lang == 'it') {
+    window.strings = {
+        started: "Iniziato alle",
+        arrived: "Arrivato alle",
+        change: "Cambio mezzo",
+        destination: "Destinazione",
+        addpoint: "Aggiuni punto"
+    }
+} else {
+    window.strings = {
+        started: "Started a new journey",
+        arrived: "Arrived at a destination",
+        change: "Change",
+        destination: "Destination",
+        addpoint: "Add a point"
+    };
+}
+
+$().ready(function(){
 
     function update() {
         var file = $.urlParam('f');

@@ -67,7 +67,7 @@ export class Segment extends React.Component {
                     <ModeRibbon onModeChange={this.setMode} mode={this.state.mode} />
                     <div className="stopinfo">
                         <span className="timestamp">{this.timestr(this.state.startTime)}</span>
-                        <p>Started a new journey</p>
+                        <p>{window.strings.started}</p>
                         <SegmentControls segment={this.state.segment} />
                         <div className="MapOuter"><VertMap onMove={e => this.setPoint(e)} point={this.state.point} path={this.state.path} snapping={this.snapping} /></div>
                     </div>
@@ -81,7 +81,7 @@ export class Segment extends React.Component {
                     <div className="stopinfo">
                         <span className="timestamp">{this.timestr(this.state.startTime)}</span>
                         <div className="MapOuter"><VertMap onMove={this.setPoint} point={this.state.point} path={this.state.path} snapping={this.snapping} /></div>
-                        <p>Arrived</p>
+                        <p>{window.strings.arrived}</p>
                         <SegmentControls segment={this.state.segment} />
                     </div>
                 </div>

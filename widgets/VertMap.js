@@ -90,10 +90,6 @@ export default class VertMap extends React.Component {
      */
     onIdle() {
 
-        // Allow snapping to be disabled
-        if(!this.snapping) {
-            return;
-        }
 
         // Only snap if centre has moved >10metres
         const distm = google.maps.geometry.spherical.computeDistanceBetween(this.gmap.getCenter(), this.state.point);
@@ -104,10 +100,15 @@ export default class VertMap extends React.Component {
 
         console.log("Map has moved ", distm, this.gmap.getCenter());
 
-        if(this.state.path.length < 2) {
-            console.debug("No path was supplied to the VertMap; cannot snap!");
+        // Allow snapping to be disabled
+        if(!this.snapping || this.state.path.length < 2) {
+            console.log("Snapping is diabled, or no GPS path was provided to VertMap");
+
+            this.onMove(this.gmap.getCenter());
             return;
         }
+
+        // Otherwise snap to the trace before updating point
 
         // 1: Get center point of map
         const center = this.gmap.getCenter();
