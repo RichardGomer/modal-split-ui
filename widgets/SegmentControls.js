@@ -67,12 +67,12 @@ export default class SegmentControls extends React.Component {
         // the previous segment
         var toggle = this.state.segment.isOrigin() ? null :
         <div className="destToggle">
-            <span className="loption">Change</span>
+            <span className="loption">{window.strings.change}</span>
             <div className="inner" onClick={function(e){if(e.target != e.currentTarget) return; e.target.childNodes[0].click()}}>
                 <input type="checkbox" defaultChecked={this.state.segment.isDestination()} onChange={this.toggleDest} />
                 <span className="toggle"></span>
             </div>
-            <span className="roption">Destination</span>
+            <span className="roption">{window.strings.destination}</span>
         </div>
 
         // Origins and destinations have the option to set time manually

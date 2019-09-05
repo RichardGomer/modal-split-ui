@@ -55,7 +55,7 @@ export default class JourneyModelSegment extends HModel {
 
     setPosition(position){
 
-        console.log("Set position", position);
+        //console.log("Set position", position);
 
         if(this.state.position === position)
             return;

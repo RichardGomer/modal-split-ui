@@ -37,15 +37,15 @@ export default class JourneyModel extends HModel {
         var end = '46.067194,11.121457'; // Trento centre
 
         // Try to get the start from GPS
-        if("geolocation" in navigator) {
+        /*if("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(function(position) {
                 start = position.coords.latitude.toString() + ',' + position.coords.longitude.toString();
                 setup();
             });
-        } else { // Or use a predefined location
-            start = "46.064900,11.142689"; // Povo-Mesiano, Railway station near Trento
+        } else { // Or use a predefined location */
+            start = "46.072192,11.119275"; // Trento Station
             setup();
-        }
+        //}
 
         // Creates the journey with start/stop points
         function setup(){

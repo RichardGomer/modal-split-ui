@@ -20,7 +20,7 @@ do
     echo " + Add errors"
     ${BASH_SOURCE%/*}/adderrors.mjs "$f.json" > "${f}_errs.json"
     fname=`basename ${f}_errs.json`
-    echo "<li><a href=\"http://127.0.0.1:1234?snap=0&f=http://127.0.0.1:9090/${pp}/${fname}\" target=\"_blank\">View ${f}</a></li>" >> $l
+    echo "<li><a href=\"http://127.0.0.1:1234?snap=0&lang=en&f=http://127.0.0.1:9090/${pp}/${fname}\" target=\"_blank\">View ${f}</a></li>" >> $l
 done
 
 echo "</ul>" >> $l
