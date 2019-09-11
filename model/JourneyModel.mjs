@@ -316,6 +316,7 @@ export default class JourneyModel extends HModel {
          this.segmentcounter++;
          //console.log("Insert a new segment with UID", this.segmentcounter, this);
 
+         segment.setJourney(this); // Need to do this early because resolving segments can rely on it
          segment.setUID(this.segmentcounter);
 
          // Splice into list and update adjacent segments
@@ -443,6 +444,10 @@ export default class JourneyModel extends HModel {
 
     setErrors(a) {
         this.state.errors = a;
+    }
+
+    getErrors() {
+        return this.state.errors;
     }
 }
 

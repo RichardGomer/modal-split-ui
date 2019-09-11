@@ -79,6 +79,12 @@ export default class JourneyModelSegment extends HModel {
 
     setDestination(dest) {
         this.state.destination = dest == true;
+
+        // Sometimes end segments can be converted to journey segments,
+        // and we need to set a valid mode!
+        if(!this.state.destination && this.state.mode == 'end')
+            this.setMode('walk');
+
         this.emit('change-destination');
     }
 

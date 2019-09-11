@@ -13,11 +13,22 @@ export class SegmentInserter extends React.Component {
 
 
     insert() {
-        console.log("Insert segment");
-        var newseg = new JourneyModelSegment({mode: this.state.segment.getMode(), start: this.state.segment.getEnd()});
+        var j = this.state.segment.getJourney();
+
+        // Normally we use the end of the previous segment; unless it doesn;t have one!
+        var s = this.state.segment.getEnd();
+
+        if(typeof s == 'undefined')
+            s = this.state.segment.getStart();
+
+        var m = this.state.segment.getMode();
+        if(m == 'end')
+            m = 'walk'; // Doesn't make sense to add with a mode of 'end'!
+
+        var newseg = new JourneyModelSegment({mode: m, start: s});
         var pos = this.state.segment.getPosition() + 1;
         console.log("Manual segment insertion after", this.state.segment," at position", pos, newseg);
-        this.state.segment.getJourney().insertSegmentAt(pos, newseg);
+        j.insertSegmentAt(pos, newseg);
     }
 
 

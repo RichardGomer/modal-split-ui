@@ -30,7 +30,6 @@ export default class KMLImporter {
 
         if(!places[places.length - 1].isPoint()) {
             console.error("Last Placemark is not a point!");
-            return false;
         }
 
         // Process each place to create the GPS trace, and segments

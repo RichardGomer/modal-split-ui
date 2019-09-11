@@ -239,7 +239,7 @@
 
 .destToggle .loption, .destToggle .roption {
     display: inline-block;
-    width: 90px;
+    width: 130px;
     padding: 0 10px 0 10px;
     position: relative;
     top: -8px;
@@ -264,6 +264,7 @@
     border-radius: 10px;
     background: #ccc;
     pointer-events: none; /* Avoid blcoking clicks on parent */
+    background: #31d65d;
 }
 
 .SegmentControls .destToggle .inner input {
@@ -272,7 +273,7 @@
 
 .SegmentControls .destToggle .inner input:checked + span.toggle {
     margin-left: 23px;
-    background: #31d65d;
+
 }
 
 

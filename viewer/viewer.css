@@ -1,0 +1,73 @@
+body {
+  padding-bottom: 30px;
+  font-family: 'Open Sans', sans-serif;
+}
+h1,
+h2,
+p {
+  font-family: sans-serif;
+  text-align: center;
+}
+.leaflet-container {
+  height: 900px;
+  width: 100%;
+  margin: 0 auto;
+  z-index: 60;
+}
+
+.map {
+    width: 50%;
+    float: left;
+}
+
+.list {
+    width: 50%;
+    float: left;
+}
+
+ul {
+    list-style-type: none;
+    padding: 5px;
+    margin: 0;
+    font-size: 12px;
+}
+
+li {
+    padding: 3px;
+}
+
+li.focus {
+    background: #fffa91 !important;
+}
+
+li.demifocus {
+    background: #fffcc4;
+}
+
+.position {
+    color: #ccc;
+    display: inline-block;
+    width: 20px;
+}
+
+.id {
+    display:inline-block;
+    width: 200px;
+}
+
+.class {
+    display: inline-block;
+    margin-left: 23px;
+    padding: 5px 0 0 0;
+}
+
+.blurred .leaflet-tile-container img {
+    filter: blur(12px);
+}
+
+#btn_blur {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 90;
+}

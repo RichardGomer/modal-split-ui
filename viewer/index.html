@@ -20,22 +20,6 @@
       href="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css"
     />
 
-    <style>
-     body {
-       padding-bottom: 30px;
-     }
-     h1,
-     h2,
-     p {
-       font-family: sans-serif;
-       text-align: center;
-     }
-     .leaflet-container {
-       height: 900px;
-       width: 100%;
-       margin: 0 auto;
-     }
-   </style>
 
    <script
    			  src="//code.jquery.com/jquery-3.3.1.min.js"
@@ -44,6 +28,16 @@
 
  </head>
  <body>
+
+     <button id="btn_blur">Blur Map</button>
+
+     <script>
+     $().ready(function(){
+        $('#btn_blur').click(function(){
+            $('#viewerui').addClass('blurred');
+        });
+     });
+     </script>
 
      <div id="viewerui"></div>
 
