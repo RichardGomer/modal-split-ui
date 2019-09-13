@@ -12,12 +12,16 @@ export default class CompareMap extends React.Component {
         b: corrected journey
         o: Original (pre-error) journey
         */
-        this.state = {cmodel: props.model, focus: props.model.getFocus()};
+        this.state = {cmodel: props.model, focus: null, demifocus: []};
 
         // Sub to focus change...
         var self = (this);
         this.state.cmodel.subscribe('change-focus', function(){
-            self.setState({focus: self.state.cmodel.getFocus()})
+            var focus = self.state.cmodel.getFocus();
+
+            var demifocus = self.state.cmodel.getMatcher().getMatched(focus);
+
+            self.setState({focus: focus, demifocus: demifocus});
         })
 
         autoBind(this);
@@ -39,25 +43,31 @@ export default class CompareMap extends React.Component {
             var k = name + '_' + s.getIdentifier();
             points.push(s.getStart().split(/,/));
 
-            var classification = this.state.cmodel.classify(s);
             var mode = s.getMode();
 
             // If requestyed, render detailed segment information as a popup
             if(extended) {
                 var p = <Popup>{count} <strong>{k}</strong><br />
-                {classification}<br />
                 {mode}<br />
                 </Popup>;
             } else {
                 var p = null;
             }
 
+            //console.log(this.state.focus);
+
             if(this.state.focus == s) {
+                var scolor = "orange";
+                var ssize = 26;
+                var op = 0.9;
+            } else if (this.state.demifocus.includes(s)) {
                 var scolor = "yellow";
                 var ssize = 20;
+                var op = 0.9;
             } else {
                 var scolor = color;
                 var ssize = size;
+                var op = 0.5;
             }
 
             var cmodel = this.state.cmodel;
@@ -68,7 +78,7 @@ export default class CompareMap extends React.Component {
             })(s);
 
             markers.push(
-                <CircleMarker key={k} center={s.getStart().split(/,/)} opacity="0.5" color={scolor} radius={ssize} draggable="false" onClick={focus}>
+                <CircleMarker key={k} center={s.getStart().split(/,/)} opacity={op} color={scolor} radius={ssize} draggable="false" onClick={focus}>
                     <Tooltip>[{name} {count}] {s.getIdentifier()}</Tooltip>
                     {p}
                 </CircleMarker>
@@ -102,7 +112,12 @@ export default class CompareMap extends React.Component {
 
         var journeys = [this.renderJourney(this.state.cmodel.getOriginal(), "green", 16, "ORIG"), this.renderJourney(this.state.cmodel.getErrorfied(), "red", 13, "SHOWN"), this.renderJourney(this.state.cmodel.getOutput(), "blue", 10, "CORRECTED", true)];
 
-        var c = tracepoints[Math.floor(tracepoints.length / 2)];
+        if(this.state.focus) {
+                var c = toPoints([this.state.focus.getStart()])[0];
+        }
+        else {
+            var c = tracepoints[Math.floor(tracepoints.length / 2)];
+        }
         //console.log(c, tracepoints);
 
         var map = (

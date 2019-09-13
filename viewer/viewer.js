@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import CompareModel from './CompareModel';
 import CompareMap from './CompareMap';
-import CompareList from './CompareList';
+import {CompareList, ErrList} from './CompareList';
+import CompareTable from './CompareTable';
 import {JourneyModel, JourneyModelSegment} from '../model'
 
 const domContainer = document.querySelector('#viewerui');
@@ -56,9 +57,13 @@ $().ready(function(){
         $.when(get(fA), get(fB), get(fO)).then(function(ja, jb, jo){
             console.log(ja, jb, jo);
             var cm = new CompareModel(ja, jb, jo);
+
+            /*<div className="list"><CompareList model={cm} /></div>*/
+
             ReactDOM.render(<div>
                     <div className="map"><CompareMap model={cm} /></div>
-                    <div className="list"><CompareList model={cm}/></div>
+                    <div className="table"><CompareTable model={cm} /></div>
+                    <div className="errors"><ErrList model={cm} /></div>
                 </div>, domContainer);
         });
 

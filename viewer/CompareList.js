@@ -37,6 +37,8 @@ export default class CompareList extends React.Component {
 
     render() {
 
+        console.log(this.state.cmodel.getMatcher().getMatches());
+
         function toPoints(arr){
             return arr.map(function(i){
                 return i.split(/,/);
@@ -49,8 +51,29 @@ export default class CompareList extends React.Component {
 
         var self = this; // need a static ref for an event handler, below
 
+        return <div>
+            <ul>{original}</ul>
+            <ul>{errors}</ul>
+            <ul>{output}</ul>
+        </div>
+
+    }
+}
+
+export class ErrList extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {cmodel: props.model};
+
+        autoBind(this);
+    }
+
+    render() {
+
         var  errs = [];
         var errList = this.state.cmodel.getErrorList();
+        var self = this;
         for(var e of errList) {
 
             (function(e){ // Trap an event handler in a closure
@@ -80,15 +103,9 @@ export default class CompareList extends React.Component {
             })(e);
         }
 
-        return <div>
-            <ul>{original}</ul>
-            <ul>{errors}</ul>
-            <ul>{output}</ul>
-            <ul className="errors">
-            {errs}
-            </ul>
-        </div>
-
+        return <ul className="errors">
+        {errs}
+        </ul>
     }
 }
 
@@ -106,11 +123,9 @@ class SegmentInfo extends React.Component {
 
             var focus = self.state.cmodel.getFocus();
 
-            console.log("Focus", focus);
-
             // See if this segment is comparable to the selected one (ie gets a soft focus)
             var demifocus = false;
-            if(self.state.cmodel.comparable(focus, self.state.seg)) {
+            if(self.state.cmodel.getMatcher().isMatched(focus, self.state.seg)) {
                 demifocus = true;
             }
 
@@ -121,12 +136,10 @@ class SegmentInfo extends React.Component {
     }
 
     render() {
+
         var classes = "seg" + (this.state.focus ? " focus" : "") + (this.state.demifocus ? " demifocus" : "");
 
-        var classification = this.state.seg.isDestination() ? "" : this.state.cmodel.classify(this.state.seg);
         var mode = this.state.seg.isDestination() ? "" : this.state.seg.getMode();
-
-        var ext = this.compare ? <span className="class">{classification}</span> : "";
 
         var k = this.state.seg.getIdentifier();
 
@@ -135,7 +148,6 @@ class SegmentInfo extends React.Component {
         return <li className={classes} onClick={this.focus}>
             <strong className="position">{count}</strong> <strong className="id">{k}</strong>
             <span className="mode">{mode}</span>
-            {ext}
         </li>
     }
 
