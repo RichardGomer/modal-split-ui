@@ -62,170 +62,157 @@ export class Matcher {
         // The match matrix
         var matches = [];
 
-        console.log("Match");
+        var comps = [['jin','jout'],['jerr','jout']];
 
-        // Two loops to iterate through all journey combinations
-        for(var j1id in journeys) {
-            for(var j2id in journeys) {
+        var matches = [];
 
-                if(j1id == j2id)
-                    break; // Only do half of the pairs
+        for(var c of comps) {
+            matches = matches.concat(this.matchPair(c[0], c[1], journeys));
+        }
 
-                console.log(j1id, j2id);
+        // Now merge the matches based on jout
+        for(var mai in matches) {
+            var ma = matches[mai];
+            if(ma == null) continue;
 
-                var j1 = journeys[j1id];
-                var j2 = journeys[j2id];
+            for(var mbi in matches) {
 
-                var segs1 = j1.getSegments();
-                var segs2 = j2.getSegments();
+                var mb = matches[mbi];
 
-                // Persistent counters mark progress through each journey
-                var progress = {};
-                for(var i in journeys) {
-                    progress[i] = 0;
-                }
+                console.log(mai, mbi, ma, mb);
 
-                // One iterator through j1
-                for(var s1id = progress[j1id]; s1id < segs1.length; s1id++) {
-                    var s1 = segs1[s1id];
+                if(mai != mbi && ma != null && mb != null && ma.jout == mb.jout) {
+                    var jo = ma.jout;
+                    var ji = ma.jin != null ? ma.jin : mb.jin;
+                    var je = ma.jerr != null ? ma.jerr : mb.jerr;
 
-                    // And one iterator through j2
-                    for(var s2id = progress[j2id]; s2id < segs2.length; s2id++) {
-                        var s2 = segs2[s2id];
-
-                        // IF the segments are comparable
-                        if(this.isBestMatch(s1, s2, segs1, segs2, progress[j1id], progress[j2id])) {
-
-                            // Advance the progress markers
-                            // Any unmatched points can be added as singletons
-                            while(progress[j1id] <= s1id) {
-                                var m = {};
-                                m[j1id] = segs1[progress[j1id]];
-                                matches.push(m);
-                                progress[j1id]++;
-                            }
-
-                            while(progress[j2id] <= s2id) {
-                                var m = {};
-                                m[j2id] = segs2[progress[j2id]];
-                                matches.push(m);
-                                progress[j2id]++;
-                            }
-
-                            // record the match
-                            var m = {};
-                            m[j1id] = s1;
-                            m[j2id] = s2;
-                            matches.push(m);
-                            console.log("paired", j1id + "-" + s1.getIdentifier(), j2id + "-" + s2.getIdentifier())
-                            break;
-                        }
-                    }
-                }
-
-                while(progress[j1id] < segs1.length) {
-                    var m = {};
-                    m[j1id] = segs1[progress[j1id]];
-                    matches.push(m);
-                    progress[j1id]++;
-                }
-
-                while(progress[j2id] < segs2.length) {
-                    var m = {};
-                    m[j2id] = segs2[progress[j2id]];
-                    matches.push(m);
-                    progress[j2id]++;
+                    matches[mai] = {jerr: je, jin: ji, jout: jo};
+                    matches[mbi] = null;
                 }
             }
         }
 
-        // See if two objects contain the same value anywhere
-        function samePoints(a, b) {
-            var aks = Object.keys(a);
-            var bks = Object.keys(b);
-            for(var ak of aks) {
-                for(var bk of bks) {
-                    if(a[ak] == b[bk]) {
-                        return true;
-                    }
-                }
-            }
+        matches = matches.filter(function(o){return o;});
 
-            return false;
+        //console.log(matches);
+
+        // Sort based on position
+        function pos(a) {
+            return a.getPosition();
         }
 
-        // Now we have a list of comparable pairs; combine pairs where the same point appears in both
-        for(var aid in matches) {
-            var a = matches[aid];
-            if(a == null)
-                continue;
+        function msort(a,b){
+                var ap = Object.values(a).map(pos);
+                var bp = Object.values(b).map(pos);
 
-            for(var bid in matches) {
-                var b = matches[bid];
+                var ma = Math.min(...ap);
+                var mb = Math.min(...bp);
 
-                if(b == null || a == b)
-                    continue;
+                if(ma != mb)
+                    return ma - mb;
 
-                if(samePoints(a, b)) {
-                    // Combine a and b
-                    Object.assign(a, b);
-                    matches[bid] = null;
+                return Math.max(...ap) - Math.max(...bp);
+        }
+
+        matches.sort(msort)
+
+        // Add missing (ie unmatched) segments from each journey
+        var last = {jin: 0, jerr: 0, jout: 0}
+        for(var m of matches) {
+            for(var jn of Object.keys(m)) {
+                while(last[jn] < m[jn].getPosition()){
+                    var o = {};
+                    o[jn] = journeys[jn].getSegments()[last[jn]];
+                    matches.push(o);
+                    last[jn]++;
                 }
+                last[jn]++; // Skip the one that's already in the match
             }
         }
+
+        // Add any stragglers
+        for(var jn of Object.keys(journeys)) {
+            while(last[jn] < journeys[jn].getSegments().length){
+                var o = {};
+                o[jn] = journeys[jn].getSegments()[last[jn]];
+                matches.push(o);
+                last[jn]++;
+            }
+        }
+
+        // Sort again
+        matches.sort(msort);
 
         console.log(matches);
 
-        // Only retain the non-null items from the match matrix
-        this.matches = [];
-        for(var i in matches) {
-            if(matches[i] != null) {
-                this.matches.push(matches[i]);
-            }
-        }
+        this.matches = matches;
 
-        // Sort the matrix by distance from the start of th journeys
-        var maxPos = function(ob){
-            var pos = [];
-            for(var j of Object.values(ob)){
-                pos.push(j.getPosition());
-            }
-
-            return Math.max.apply(null, pos);
-        }
-        this.matches.sort(function(a,b){
-            return maxPos(a) - maxPos(b);
-        });
     }
 
-    // Check if a is the best (remaining) match for b
-    // We also check the reverse comparison, so it should be stable I guess
-    isBestMatch(a, b, asegs, bsegs, afrom, bfrom, reverse) {
-        if(!this.samePlace(a, b)) {
-            return false;
-        }
+    // Match two journeys together; returns an array of match objects
+    matchPair(jai, jbi, journeys) {
+        var distances = [];
 
-        var reverse = reverse ? false : true;
+        var ja = journeys[jai];
+        var jb = journeys[jbi];
 
-        var same = [];
-        for(var bi = bfrom; bi < bsegs.length; bi++) {
-            var bcand = bsegs[bi];
-            if(this.samePlace(bcand, a)) {
+        console.log("Match pair", jai, jbi, ja, jb);
 
-                var dist = this.distance(a, bcand);
-                same.push({cand: bcand, dist: dist});
+        // 1: Find pairwise distances between all points
+        for(var sa of ja.getSegments()) {
+            for(var sb of jb.getSegments()){
+                distances.push({a: sa, b: sb, dist: this.distance(sa, sb)});
             }
         }
 
-        // Sort candidates by Distance
-        same.sort(function(x,y){
-            return x.dist - y.dist;
-        })
+        var self = this;
 
-        // Check if B came out on top
-        return b == same[0].cand && (reverse ? this.isBestMatch(b, a, bsegs, asegs, bfrom, afrom, true) : true);
+        function closest(a_start, a_end, b_start, b_end) {
 
-        // TODO: Prefer to match destinations with other destinations; vice-versa
+            var best = null;
+            for(var d of distances) {
+                if(d.a.getPosition() >= a_start && d.b.getPosition() >= b_start) {
+                    if(best === null || d.dist < best.dist) {
+                        best = d;
+                    }
+                }
+            }
+
+            return best;
+        }
+
+        var matches = [];
+        function matchBest(a_start, a_end, b_start, b_end) {
+
+            // IF the ranges are zero length, we can stop
+            if((a_end - a_start) <= 0 || (b_end - b_start) <= 0) return;
+
+            console.log("Match in range", a_start, a_end, b_start, b_end);
+
+            // Find the closest points within the bounds
+            var best = closest(a_start, a_end, b_start, b_end);
+
+            // If the best match is out of the tolerance, we can stop
+            if(!self.samePlace(best.a, best.b)) return;
+
+            // Create the match
+            var m = {};
+            m[jai] = best.a;
+            m[jbi] = best.b;
+            matches.push(m);
+
+            // Complete on either side of the new match
+            var ai = best.a.getPosition();
+            var bi = best.b.getPosition();
+
+            matchBest(a_start, ai-1, b_start, bi-1);
+
+            matchBest(ai+1, a_end, bi+1, b_end);
+        }
+
+        matchBest(0, ja.getSegments().length - 1, 0, jb.getSegments().length - 1);
+
+        return matches;
     }
 
     distance(a, b) {
@@ -263,7 +250,7 @@ export class Matcher {
         for(var m of this.matches) {
             var segs = Object.values(m);
             if(segs.includes(a) && segs.includes(b)) return true;
-            if(segs.includes(a) || segs.includes(b)) return false;
+            //if(segs.includes(a) || segs.includes(b)) return false;
         }
     }
 

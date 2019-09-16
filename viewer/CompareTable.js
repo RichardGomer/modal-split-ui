@@ -48,7 +48,7 @@ export default class CompareTable extends React.Component {
             rows.push(<tr>{tds}</tr>);
         }
 
-        var table =  <table><tbody>{header}{rows}</tbody></table>;
+        var table =  <table><thead>{header}</thead><tbody>{rows}</tbody></table>;
 
 
 

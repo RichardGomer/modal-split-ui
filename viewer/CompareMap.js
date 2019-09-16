@@ -12,7 +12,7 @@ export default class CompareMap extends React.Component {
         b: corrected journey
         o: Original (pre-error) journey
         */
-        this.state = {cmodel: props.model, focus: null, demifocus: []};
+        this.state = {cmodel: props.model, focus: null, demifocus: [], zoom: 14};
 
         // Sub to focus change...
         var self = (this);
@@ -120,8 +120,15 @@ export default class CompareMap extends React.Component {
         }
         //console.log(c, tracepoints);
 
+        var self = this;
+        function handleZoom(e) {
+            //console.log("Zoom", e, map);
+            // This is a bit of a hack, not sure how it's supposed to be done
+            self.setState({zoom: e.sourceTarget._animateToZoom});
+        }
+
         var map = (
-            <Map zoom="12" center={c}>
+            <Map center={c} zoom={this.state.zoom} onZoom={function(e){handleZoom(e)}}>
                 <TileLayer
                   attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
