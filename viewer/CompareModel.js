@@ -96,25 +96,60 @@ export class Matcher {
 
         //console.log(matches);
 
-        // Sort based on position
-        function pos(a) {
-            return a.getPosition();
-        }
-
         function msort(a,b){
-                var ap = Object.values(a).map(pos);
-                var bp = Object.values(b).map(pos);
 
-                var ma = Math.min(...ap);
-                var mb = Math.min(...bp);
 
-                if(ma != mb)
-                    return ma - mb;
 
-                return Math.max(...ap) - Math.max(...bp);
+                for(var jn of ['jin','jerr','jout']) {
+
+                    if(!a[jn] || !b[jn]) continue;
+
+                    console.log("CMP %s [%i] %s [%i] %s", jn, ap, a[jn].getIdentifier(), bp, b[jn].getIdentifier());
+
+                    var ap = a[jn].getPosition();
+                    var bp = b[jn].getPosition();
+
+                    if(ap != bp) {
+                        return ap-bp;
+                    }
+                }
+
+                return 0;
         }
 
-        matches.sort(msort)
+        function sortMatches(arr) {
+
+            var out = [arr[0]];
+
+            for(var i in arr) { // Merge each input..
+                if(i == 0) continue; // Skip firsts
+
+                var a = arr[i];
+                var added = false;
+
+                for(var j in out) { // into the correct place in the output
+                    var b = out[j];
+
+                    console.log(i, j, out);
+
+                    // If b belongs
+                    if(msort(a,b) < 0) {
+                        console.log("INS at ", j)
+                        out.splice(j, 0, a);
+                        added  = true;
+                        break;
+                    }
+                }
+
+                if(!added)
+                    out.push(a);
+            }
+
+            return out;
+        }
+
+        //matches.sort(msort)
+        matches = sortMatches(matches);
 
         // Add missing (ie unmatched) segments from each journey
         var last = {jin: 0, jerr: 0, jout: 0}
@@ -140,8 +175,11 @@ export class Matcher {
             }
         }
 
+        // TODO: match any singletons, if possible
+
         // Sort again
-        matches.sort(msort);
+        //matches.sort(msort);
+        matches = sortMatches(matches);
 
         console.log(matches);
 
@@ -156,7 +194,7 @@ export class Matcher {
         var ja = journeys[jai];
         var jb = journeys[jbi];
 
-        console.log("Match pair", jai, jbi, ja, jb);
+
 
         // 1: Find pairwise distances between all points
         for(var sa of ja.getSegments()) {
@@ -165,13 +203,20 @@ export class Matcher {
             }
         }
 
+        distances.sort(function(a,b){
+            return a.dist - b.dist;
+        });
+
+        console.log("Match pair", jai, jbi, distances);
+
         var self = this;
 
         function closest(a_start, a_end, b_start, b_end) {
 
             var best = null;
             for(var d of distances) {
-                if(d.a.getPosition() >= a_start && d.b.getPosition() >= b_start) {
+                if(d.a.getPosition() >= a_start && d.b.getPosition() >= b_start &&
+                    d.a.getPosition() <= a_end && d.b.getPosition() <= b_end) {
                     if(best === null || d.dist < best.dist) {
                         best = d;
                     }
@@ -205,6 +250,8 @@ export class Matcher {
             var ai = best.a.getPosition();
             var bi = best.b.getPosition();
 
+            console.log("Matched ", ai, bi)
+
             matchBest(a_start, ai-1, b_start, bi-1);
 
             matchBest(ai+1, a_end, bi+1, b_end);
@@ -235,14 +282,7 @@ export class Matcher {
 
     // Return the names being used for journeys in the match matrix
     getJourneyNames() {
-        var names = {};
-        for(var m of this.matches) {
-            for(var n in m) {
-                names[n] = true;
-            }
-        }
-
-        return Object.keys(names);
+        return ['jin', 'jerr', 'jout'];
     }
 
     // Test if one segment is matched to another
