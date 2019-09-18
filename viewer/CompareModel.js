@@ -104,7 +104,7 @@ export class Matcher {
 
                     if(!a[jn] || !b[jn]) continue;
 
-                    console.log("CMP %s [%i] %s [%i] %s", jn, ap, a[jn].getIdentifier(), bp, b[jn].getIdentifier());
+                    //console.log("CMP %s [%i] %s [%i] %s", jn, ap, a[jn].getIdentifier(), bp, b[jn].getIdentifier());
 
                     var ap = a[jn].getPosition();
                     var bp = b[jn].getPosition();
@@ -130,11 +130,11 @@ export class Matcher {
                 for(var j in out) { // into the correct place in the output
                     var b = out[j];
 
-                    console.log(i, j, out);
+                    //console.log(i, j, out);
 
                     // If b belongs
                     if(msort(a,b) < 0) {
-                        console.log("INS at ", j)
+                        //console.log("INS at ", j)
                         out.splice(j, 0, a);
                         added  = true;
                         break;
@@ -152,26 +152,40 @@ export class Matcher {
         matches = sortMatches(matches);
 
         // Add missing (ie unmatched) segments from each journey
-        var last = {jin: 0, jerr: 0, jout: 0}
+        var next = {jin: 0, jerr: 0, jout: 0}
         for(var m of matches) {
+
+            if(Object.values(m).length < 2) continue;
+
             for(var jn of Object.keys(m)) {
-                while(last[jn] < m[jn].getPosition()){
-                    var o = {};
-                    o[jn] = journeys[jn].getSegments()[last[jn]];
+
+                var nextpos = m[jn].getPosition();
+                console.log("Found %s %i", jn, nextpos)
+
+                while(next[jn] < nextpos){
+                    var missing = journeys[jn].getSegments()[next[jn]];
+                    console.log("Insert missing %i (%s) into %s", next[jn], missing.getIdentifier(), jn)
+                    var o = {}; o[jn] = missing;
                     matches.push(o);
-                    last[jn]++;
+
+                    next[jn]++;
                 }
-                last[jn]++; // Skip the one that's already in the match
+
+                console.log("%s advanced to %i", jn, nextpos + 1);
+                next[jn] = nextpos + 1; // Skip the one that's already in the match
             }
+
+            console.log("Counters", next);
         }
 
         // Add any stragglers
         for(var jn of Object.keys(journeys)) {
-            while(last[jn] < journeys[jn].getSegments().length){
+            console.log("Last %s is %i of %i", jn, next[jn], journeys[jn].getSegments().length);
+            while(next[jn] < journeys[jn].getSegments().length){
                 var o = {};
-                o[jn] = journeys[jn].getSegments()[last[jn]];
+                o[jn] = journeys[jn].getSegments()[next[jn]];
                 matches.push(o);
-                last[jn]++;
+                next[jn]++;
             }
         }
 
