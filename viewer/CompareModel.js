@@ -181,7 +181,7 @@ export class Matcher {
         // Add any stragglers
         for(var jn of Object.keys(journeys)) {
             console.log("Last %s is %i of %i", jn, next[jn], journeys[jn].getSegments().length);
-            while(next[jn] < journeys[jn].getSegments().length){
+            while(next[jn] < journeys[jn].getSegments().length) {
                 var o = {};
                 o[jn] = journeys[jn].getSegments()[next[jn]];
                 matches.push(o);
