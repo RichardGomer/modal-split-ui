@@ -52,6 +52,10 @@ for(var i in segs) {
         console.log("+ is a destination")
         var last = records[records.length - 1];
         last.endTime = s.getStartTime();
+        meta.endTime = s.getStartTime();
+
+        // And add the final point to the meta path
+        meta.path.push(s.getStart());
 
         continue;
     }
@@ -63,7 +67,8 @@ for(var i in segs) {
         meta = {
             path: [],
             multi: true,
-            mode: 'multi'
+            mode: 'multi',
+            startTime: s.getStartTime()
         };
 
         records.push(meta);
@@ -76,7 +81,6 @@ for(var i in segs) {
         startTime: s.getStartTime(),
         endTime: s.getEndTime()
     };
-
 
     meta.path.push(s.getStart());
 
