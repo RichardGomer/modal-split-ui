@@ -38,7 +38,7 @@
     "request": "^2.88.0",
     "spherical-geometry-js": "^1.4.0",
     "test": "^0.6.0",
-    "xmldom": "^0.1.27",
+    "xmldom": "^0.6.0",
     "xpath": "0.0.27"
   }
 }
